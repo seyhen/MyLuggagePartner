@@ -16,12 +16,15 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -44,9 +47,10 @@ fun AppCheckbox(checked: Boolean, onToggle: () -> Unit, modifier: Modifier = Mod
     val c = AppTheme.colors
     val bg by animateColorAsState(if (checked) c.primary else Color.Transparent, label = "ckBg")
     val border by animateColorAsState(if (checked) c.primary else c.onSurfaceVariant, label = "ckBd")
+    val desc = if (checked) "Coché" else "Non coché"
     Box(
         modifier
-            .size(22.dp)
+            .size(28.dp)
             .clip(RoundedCornerShape(7.dp))
             .background(bg)
             .border(2.dp, border, RoundedCornerShape(7.dp))
@@ -54,10 +58,11 @@ fun AppCheckbox(checked: Boolean, onToggle: () -> Unit, modifier: Modifier = Mod
                 interactionSource = remember { MutableInteractionSource() },
                 indication = ripple(bounded = false, radius = 20.dp),
                 onClick = onToggle,
-            ),
+            )
+            .semantics { contentDescription = desc },
         contentAlignment = Alignment.Center,
     ) {
-        if (checked) Icon(Icons.Default.Check, null, tint = c.onPrimary, modifier = Modifier.size(14.dp))
+        if (checked) Icon(Icons.Default.Check, null, tint = c.onPrimary, modifier = Modifier.size(16.dp))
     }
 }
 
@@ -143,7 +148,7 @@ fun QtyStepper(
     big: Boolean = false,
 ) {
     val c = AppTheme.colors
-    val btn = if (big) 36.dp else 28.dp
+    val btn = if (big) 36.dp else 34.dp
     Row(
         Modifier
             .clip(CircleShape)

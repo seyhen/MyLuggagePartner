@@ -13,9 +13,13 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.DatePickerDefaults
+import androidx.compose.material3.DateRangePicker
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberDateRangePickerState
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -26,6 +30,9 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
 import com.myluggagepartner.app.Draft
 import com.myluggagepartner.app.model.Intensity
 import com.myluggagepartner.app.model.TripType
@@ -45,9 +52,9 @@ fun CreateScreen(
 ) {
     val c = AppTheme.colors
     val titles = mapOf(
-        1 to ("Où partez-vous ?" to "Étape 1 sur 3"),
-        2 to ("Quel type de voyage ?" to "Étape 2 sur 3"),
-        3 to ("Derniers réglages" to "Étape 3 sur 3"),
+        1 to ("Quel type de voyage ?" to "L'essentiel — le reste est optionnel"),
+        2 to ("Où et quand ?" to "Optionnel · affine les quantités"),
+        3 to ("Derniers réglages" to "Optionnel · personnalise la liste"),
     )
 
     Box(Modifier.fillMaxSize().background(c.surface)) {
@@ -81,8 +88,8 @@ fun CreateScreen(
                 Spacer(Modifier.height(24.dp))
 
                 when (step) {
-                    1 -> StepDestination(draft, onDraft)
-                    2 -> StepType(draft, onDraft)
+                    1 -> StepType(draft, onDraft)
+                    2 -> StepDestination(draft, onDraft)
                     3 -> StepOptions(draft, onDraft)
                 }
                 Spacer(Modifier.height(130.dp))
@@ -90,29 +97,38 @@ fun CreateScreen(
         }
 
         // Footer
-        Row(
+        Column(
             Modifier.align(Alignment.BottomCenter).fillMaxWidth().padding(horizontal = 20.dp, vertical = 22.dp),
-            verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text(
-                if (step > 1) "Retour" else "Annuler",
-                color = c.primary, fontWeight = FontWeight.Bold, fontSize = 15.sp,
-                modifier = Modifier
-                    .clip(CircleShape)
-                    .clickable { if (step > 1) onStep(step - 1) else onCancel() }
-                    .padding(horizontal = 18.dp, vertical = 14.dp),
-            )
-            Spacer(Modifier.weight(1f))
-            val enabled = when (step) {
-                1 -> draft.destination.isNotBlank()
-                2 -> draft.type != null
-                else -> true
+            // Sur l'étape 1, dès qu'un type est choisi : raccourci pour personnaliser.
+            if (step == 1 && draft.type != null) {
+                Text(
+                    "Personnaliser (dates, options…)",
+                    color = c.primary, fontWeight = FontWeight.SemiBold, fontSize = 14.sp,
+                    modifier = Modifier
+                        .align(Alignment.CenterHorizontally)
+                        .clip(CircleShape)
+                        .clickable { onStep(2) }
+                        .padding(horizontal = 16.dp, vertical = 10.dp),
+                )
+                Spacer(Modifier.height(6.dp))
             }
-            CtaButton(
-                label = if (step < 3) "Continuer" else "Générer ma liste",
-                enabled = enabled,
-                fill = step == 3,
-            ) { if (step < 3) onStep(step + 1) else onFinish() }
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    if (step > 1) "Retour" else "Annuler",
+                    color = c.primary, fontWeight = FontWeight.Bold, fontSize = 15.sp,
+                    modifier = Modifier
+                        .clip(CircleShape)
+                        .clickable { if (step > 1) onStep(step - 1) else onCancel() }
+                        .padding(horizontal = 18.dp, vertical = 14.dp),
+                )
+                Spacer(Modifier.weight(1f))
+                when (step) {
+                    1 -> CtaButton("Générer ma liste", enabled = draft.type != null, fill = false) { onFinish() }
+                    2 -> CtaButton("Continuer", enabled = true, fill = false) { onStep(3) }
+                    else -> CtaButton("Générer ma liste", enabled = true, fill = true) { onFinish() }
+                }
+            }
         }
     }
 }
@@ -131,6 +147,7 @@ private fun CtaButton(label: String, enabled: Boolean, fill: Boolean, onClick: (
     ) { Text(label, color = c.onPrimary, fontWeight = FontWeight.SemiBold, fontSize = 16.sp) }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun StepDestination(draft: Draft, onDraft: ((Draft) -> Draft) -> Unit) {
     val c = AppTheme.colors
@@ -140,7 +157,62 @@ private fun StepDestination(draft: Draft, onDraft: ((Draft) -> Draft) -> Unit) {
             "Les dates servent à calculer les quantités. Tout reste modifiable ensuite.",
             color = c.onSurfaceVariant, fontSize = 13.sp, lineHeight = 20.sp,
         )
-        // NB : le vrai DateRangePicker Material se branche ici (laissé à Claude Code).
+
+        var showPicker by remember { mutableStateOf(false) }
+        val dateLabel = if (draft.from != null && draft.to != null) {
+            "${draft.from.dayOfMonth}/${draft.from.monthValue} — ${draft.to.dayOfMonth}/${draft.to.monthValue}/${draft.to.year}"
+        } else "Sélectionner les dates"
+
+        Text("DATES", color = c.primary, fontSize = 12.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(start = 4.dp))
+        Row(
+            Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp))
+                .background(c.surface).border(1.5.dp, c.outline, RoundedCornerShape(16.dp))
+                .clickable { showPicker = !showPicker }
+                .padding(horizontal = 16.dp, vertical = 15.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text("📅", fontSize = 16.sp)
+            Spacer(Modifier.width(10.dp))
+            Text(
+                dateLabel,
+                color = if (draft.from != null) c.onSurface else c.onSurfaceVariant,
+                fontSize = 16.sp,
+            )
+        }
+
+        if (showPicker) {
+            val pickerState = rememberDateRangePickerState(
+                initialSelectedStartDateMillis = draft.from?.atStartOfDay(ZoneId.systemDefault())?.toInstant()?.toEpochMilli(),
+                initialSelectedEndDateMillis = draft.to?.atStartOfDay(ZoneId.systemDefault())?.toInstant()?.toEpochMilli(),
+            )
+
+            LaunchedEffect(pickerState.selectedStartDateMillis, pickerState.selectedEndDateMillis) {
+                val startMs = pickerState.selectedStartDateMillis
+                val endMs = pickerState.selectedEndDateMillis
+                if (startMs != null && endMs != null) {
+                    val from = Instant.ofEpochMilli(startMs).atZone(ZoneId.systemDefault()).toLocalDate()
+                    val to = Instant.ofEpochMilli(endMs).atZone(ZoneId.systemDefault()).toLocalDate()
+                    onDraft { it.copy(from = from, to = to) }
+                }
+            }
+
+            DateRangePicker(
+                state = pickerState,
+                title = null,
+                headline = null,
+                showModeToggle = false,
+                colors = DatePickerDefaults.colors(
+                    containerColor = c.surfaceContainer,
+                    dayContentColor = c.onSurface,
+                    selectedDayContainerColor = c.primary,
+                    selectedDayContentColor = c.onPrimary,
+                    todayContentColor = c.primary,
+                    todayDateBorderColor = c.primary,
+                ),
+                modifier = Modifier.fillMaxWidth().height(400.dp)
+                    .clip(RoundedCornerShape(24.dp)),
+            )
+        }
     }
 }
 

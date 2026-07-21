@@ -54,6 +54,7 @@ data class Trip(
     val type: TripType,
     val hasPhoto: Boolean,
     val items: List<PackItem>,
+    val departureDateEpoch: Long? = null,
 ) {
     val total: Int get() = items.size
     val done: Int get() = items.count { it.checked }
@@ -61,8 +62,9 @@ data class Trip(
 }
 
 /* ————— Génération de liste (quantités réalistes) ————— */
-private var idSeed = 1000L
-private fun nextId(): Long = ++idSeed
+private val idBase = System.currentTimeMillis() * 1000
+private var idCounter = 0L
+private fun nextId(): Long = idBase + ++idCounter
 private fun clampI(v: Double, a: Int, b: Int): Int = max(a, min(b, v.roundToInt()))
 
 data class GenParams(
@@ -165,6 +167,13 @@ fun generateItems(p: GenParams): List<PackItem> {
 }
 
 fun newId(): Long = nextId()
+
+data class TripTemplate(
+    val id: Long,
+    val name: String,
+    val type: TripType,
+    val items: List<Pair<Category, String>>,
+)
 
 /* ————— Données de démo ————— */
 fun demoTrips(): List<Trip> {

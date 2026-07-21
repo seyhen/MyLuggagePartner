@@ -2,6 +2,7 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose")
+    id("com.google.devtools.ksp")
 }
 
 android {
@@ -52,6 +53,21 @@ dependencies {
     implementation("androidx.compose.material:material-icons-extended")
     implementation("androidx.navigation:navigation-compose:2.8.1")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.6")
+
+    // Room
+    val roomVersion = "2.6.1"
+    implementation("androidx.room:room-runtime:$roomVersion")
+    implementation("androidx.room:room-ktx:$roomVersion")
+    ksp("androidx.room:room-compiler:$roomVersion")
+
+    // DataStore
+    implementation("androidx.datastore:datastore-preferences:1.1.1")
+
+    // Splash Screen
+    implementation("androidx.core:core-splashscreen:1.0.1")
+
+    // Google Fonts (downloadable)
+    implementation("androidx.compose.ui:ui-text-google-fonts")
 
     debugImplementation("androidx.compose.ui:ui-tooling")
 }

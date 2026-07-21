@@ -81,7 +81,7 @@ fun SettingsScreen(
             Spacer(Modifier.height(22.dp))
             // Export
             Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(24.dp)).background(c.surfaceContainer)) {
-                ExportRow("📄", "Exporter en PDF", onExport)
+                ExportRow("📄", "Exporter toutes les listes", onExport)
                 Box(Modifier.fillMaxWidth().height(1.dp).padding(horizontal = 18.dp).background(c.surfaceContainerLow))
                 ExportRow("📤", "Partager une liste", onShare)
             }
