@@ -4,6 +4,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -11,6 +14,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.DatePickerDefaults
@@ -57,7 +61,7 @@ fun CreateScreen(
         3 to ("Derniers réglages" to "Optionnel · personnalise la liste"),
     )
 
-    Box(Modifier.fillMaxSize().background(c.surface)) {
+    Box(Modifier.fillMaxSize().background(c.surface).windowInsetsPadding(WindowInsets.safeDrawing)) {
         Column(Modifier.fillMaxSize()) {
             // Nav + stepper
             Row(
@@ -100,34 +104,38 @@ fun CreateScreen(
         Column(
             Modifier.align(Alignment.BottomCenter).fillMaxWidth().padding(horizontal = 20.dp, vertical = 22.dp),
         ) {
-            // Sur l'étape 1, dès qu'un type est choisi : raccourci pour personnaliser.
-            if (step == 1 && draft.type != null) {
+            // Raccourci vers l'étape suivante — le CTA principal génère toujours la liste.
+            val secondaryLabel = when {
+                step == 1 && draft.type != null -> "Personnaliser (dates, options…)"
+                step == 2 -> "Plus d'options (style, voyageurs…)"
+                else -> null
+            }
+            if (secondaryLabel != null) {
                 Text(
-                    "Personnaliser (dates, options…)",
+                    secondaryLabel,
                     color = c.primary, fontWeight = FontWeight.SemiBold, fontSize = 14.sp,
                     modifier = Modifier
                         .align(Alignment.CenterHorizontally)
+                        .defaultMinSize(minHeight = 44.dp)
                         .clip(CircleShape)
-                        .clickable { onStep(2) }
+                        .clickable { onStep(step + 1) }
                         .padding(horizontal = 16.dp, vertical = 10.dp),
                 )
                 Spacer(Modifier.height(6.dp))
             }
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    if (step > 1) "Retour" else "Annuler",
-                    color = c.primary, fontWeight = FontWeight.Bold, fontSize = 15.sp,
-                    modifier = Modifier
+                Box(
+                    Modifier
+                        .defaultMinSize(minHeight = 48.dp)
                         .clip(CircleShape)
                         .clickable { if (step > 1) onStep(step - 1) else onCancel() }
-                        .padding(horizontal = 18.dp, vertical = 14.dp),
-                )
-                Spacer(Modifier.weight(1f))
-                when (step) {
-                    1 -> CtaButton("Générer ma liste", enabled = draft.type != null, fill = false) { onFinish() }
-                    2 -> CtaButton("Continuer", enabled = true, fill = false) { onStep(3) }
-                    else -> CtaButton("Générer ma liste", enabled = true, fill = true) { onFinish() }
+                        .padding(horizontal = 18.dp),
+                    contentAlignment = Alignment.CenterStart,
+                ) {
+                    Text(if (step > 1) "Retour" else "Annuler", color = c.primary, fontWeight = FontWeight.Bold, fontSize = 15.sp)
                 }
+                Spacer(Modifier.weight(1f))
+                CtaButton("Générer ma liste", enabled = draft.type != null, fill = step == 3) { onFinish() }
             }
         }
     }
@@ -171,7 +179,7 @@ private fun StepDestination(draft: Draft, onDraft: ((Draft) -> Draft) -> Unit) {
                 .padding(horizontal = 16.dp, vertical = 15.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text("📅", fontSize = 16.sp)
+            Icon(Icons.Default.CalendarToday, null, tint = c.onSurfaceVariant, modifier = Modifier.size(16.dp))
             Spacer(Modifier.width(10.dp))
             Text(
                 dateLabel,

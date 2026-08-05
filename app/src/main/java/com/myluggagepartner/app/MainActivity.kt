@@ -220,18 +220,6 @@ private fun AppRoot(vm: AppViewModel = viewModel()) {
                         premium = state.premium,
                         onTheme = vm::setTheme,
                         onUnlock = { vm.unlockPremium(); flash("Merci ! Valises illimitées débloquées ✨") },
-                        onExport = {
-                            if (state.trips.isEmpty()) { flash("Aucune valise à exporter") }
-                            else {
-                                val text = state.trips.joinToString("\n\n${"—".repeat(30)}\n\n") { formatTripText(it) }
-                                val intent = Intent(Intent.ACTION_SEND).apply {
-                                    type = "text/plain"
-                                    putExtra(Intent.EXTRA_SUBJECT, "Mes valises — MyLuggagePartner")
-                                    putExtra(Intent.EXTRA_TEXT, text)
-                                }
-                                context.startActivity(Intent.createChooser(intent, "Exporter"))
-                            }
-                        },
                         onShare = {
                             if (state.trips.isEmpty()) { flash("Aucune valise à partager") }
                             else {
@@ -368,10 +356,12 @@ private fun DialogActions(
     val c = AppTheme.colors
     Spacer(Modifier.height(16.dp))
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End, verticalAlignment = Alignment.CenterVertically) {
-        Text(cancel, color = c.primary, fontWeight = FontWeight.Bold, fontSize = 15.sp,
-            modifier = Modifier.clip(RoundedCornerShape(999.dp)).clickable { onCancel() }.padding(horizontal = 16.dp, vertical = 10.dp))
+        Box(Modifier.defaultMinSize(minHeight = 48.dp).clip(RoundedCornerShape(999.dp)).clickable { onCancel() }.padding(horizontal = 16.dp), contentAlignment = Alignment.Center) {
+            Text(cancel, color = c.primary, fontWeight = FontWeight.Bold, fontSize = 15.sp)
+        }
         Spacer(Modifier.width(4.dp))
-        Text(confirm, color = if (destructive) c.errorText else c.primary, fontWeight = FontWeight.Bold, fontSize = 15.sp,
-            modifier = Modifier.clip(RoundedCornerShape(999.dp)).clickable { onConfirm() }.padding(horizontal = 16.dp, vertical = 10.dp))
+        Box(Modifier.defaultMinSize(minHeight = 48.dp).clip(RoundedCornerShape(999.dp)).clickable { onConfirm() }.padding(horizontal = 16.dp), contentAlignment = Alignment.Center) {
+            Text(confirm, color = if (destructive) c.errorText else c.primary, fontWeight = FontWeight.Bold, fontSize = 15.sp)
+        }
     }
 }

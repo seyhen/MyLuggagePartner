@@ -3,6 +3,9 @@ package com.myluggagepartner.app.ui.screens
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -10,6 +13,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -21,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -65,7 +70,9 @@ fun HomeScreen(
             trip.departureDateEpoch ?: Long.MAX_VALUE
         })
     }
-    Box(Modifier.fillMaxSize().background(c.surface)) {
+    // Le prochain départ imminent (J-7 ou moins) est mis en avant visuellement.
+    val featuredTripId = sortedTrips.firstOrNull { countdownLabel(it) != null }?.id
+    Box(Modifier.fillMaxSize().background(c.surface).windowInsetsPadding(WindowInsets.safeDrawing)) {
         Column(Modifier.fillMaxSize()) {
             // Nav bar custom
             Row(
@@ -103,7 +110,7 @@ fun HomeScreen(
                 } else {
                     items(sortedTrips, key = { it.id }) { trip ->
                         Box(Modifier.padding(horizontal = 20.dp, vertical = 7.dp)) {
-                            if (trip.hasPhoto) PhotoTripCard(trip) { onOpenTrip(trip.id) }
+                            if (trip.id == featuredTripId) PhotoTripCard(trip) { onOpenTrip(trip.id) }
                             else FlatTripCard(trip) { onOpenTrip(trip.id) }
                         }
                     }
@@ -159,7 +166,8 @@ private fun PhotoTripCard(trip: Trip, onClick: () -> Unit) {
                 interactionSource = remember { MutableInteractionSource() },
                 indication = ripple(),
                 onClick = onClick,
-            ),
+            )
+            .semantics(mergeDescendants = true) {},
     ) {
         // Scrim dégradé
         Box(
@@ -204,6 +212,7 @@ private fun FlatTripCard(trip: Trip, onClick: () -> Unit) {
                 indication = ripple(),
                 onClick = onClick,
             )
+            .semantics(mergeDescendants = true) {}
             .padding(22.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -266,13 +275,13 @@ private fun TemplateCard(tpl: TripTemplate, onUse: () -> Unit, onDelete: () -> U
             Text("${tpl.items.size} objets · ${tpl.type.label}", color = c.onSurfaceVariant, fontSize = 13.sp)
         }
         Box(
-            Modifier.size(44.dp).clip(CircleShape).clickable(
+            Modifier.size(48.dp).clip(CircleShape).clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = ripple(bounded = false, radius = 22.dp),
                 onClick = onDelete,
             ),
             contentAlignment = Alignment.Center,
-        ) { Text("✕", color = c.onSurfaceVariant, fontSize = 16.sp) }
+        ) { Icon(Icons.Default.Close, "Supprimer le modèle « ${tpl.name} »", tint = c.onSurfaceVariant, modifier = Modifier.size(18.dp)) }
     }
 }
 

@@ -3,6 +3,9 @@ package com.myluggagepartner.app.ui.screens
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -10,6 +13,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.ripple
@@ -19,6 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -32,12 +37,11 @@ fun SettingsScreen(
     premium: Boolean,
     onTheme: (ThemeMode) -> Unit,
     onUnlock: () -> Unit,
-    onExport: () -> Unit,
     onShare: () -> Unit,
     onBack: () -> Unit,
 ) {
     val c = AppTheme.colors
-    Column(Modifier.fillMaxSize().background(c.surface)) {
+    Column(Modifier.fillMaxSize().background(c.surface).windowInsetsPadding(WindowInsets.safeDrawing)) {
         Row(Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 8.dp)) {
             CircleIconButton(onClick = onBack) {
                 Icon(Icons.AutoMirrored.Filled.ArrowBack, "Retour", tint = c.onSurface, modifier = Modifier.size(20.dp))
@@ -79,11 +83,9 @@ fun SettingsScreen(
             }
 
             Spacer(Modifier.height(22.dp))
-            // Export
+            // Export / partage
             Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(24.dp)).background(c.surfaceContainer)) {
-                ExportRow("📄", "Exporter toutes les listes", onExport)
-                Box(Modifier.fillMaxWidth().height(1.dp).padding(horizontal = 18.dp).background(c.surfaceContainerLow))
-                ExportRow("📤", "Partager une liste", onShare)
+                ExportRow(Icons.Default.Share, "Partager mes listes", onShare)
             }
 
             Spacer(Modifier.height(32.dp))
@@ -96,7 +98,7 @@ fun SettingsScreen(
 }
 
 @Composable
-private fun ExportRow(emoji: String, label: String, onClick: () -> Unit) {
+private fun ExportRow(icon: ImageVector, label: String, onClick: () -> Unit) {
     val c = AppTheme.colors
     Row(
         Modifier.fillMaxWidth()
@@ -105,10 +107,9 @@ private fun ExportRow(emoji: String, label: String, onClick: () -> Unit) {
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(Modifier.size(38.dp).clip(RoundedCornerShape(12.dp)).background(c.surfaceContainerLow), contentAlignment = Alignment.Center) {
-            Text(emoji, fontSize = 16.sp)
+            Icon(icon, null, tint = c.onSurface, modifier = Modifier.size(18.dp))
         }
         Spacer(Modifier.width(12.dp))
         Text(label, color = c.onSurface, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.weight(1f))
-        Text("↗", color = c.primary, fontSize = 16.sp, fontWeight = FontWeight.Bold)
     }
 }

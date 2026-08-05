@@ -6,6 +6,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
@@ -13,8 +15,16 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Bookmark
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.RestartAlt
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.*
@@ -67,7 +77,7 @@ fun ListScreen(
     var searchVisible by remember { mutableStateOf(false) }
     val ready = trip.done == trip.total && trip.total > 0
 
-    Column(Modifier.fillMaxSize().background(c.surface)) {
+    Column(Modifier.fillMaxSize().background(c.surface).navigationBarsPadding()) {
         // ——— En-tête photo ———
         Box(Modifier.fillMaxWidth().height(210.dp).background(Brush.linearGradient(trip.type.gradient()))) {
             Box(
@@ -79,23 +89,51 @@ fun ListScreen(
                 ),
             )
             Column(Modifier.fillMaxSize().padding(horizontal = 14.dp), verticalArrangement = Arrangement.SpaceBetween) {
-                Row(Modifier.fillMaxWidth().padding(top = 56.dp), verticalAlignment = Alignment.CenterVertically) {
+                Row(Modifier.fillMaxWidth().statusBarsPadding().padding(top = 8.dp), verticalAlignment = Alignment.CenterVertically) {
                     GlassButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, "Retour", tint = Color.White, modifier = Modifier.size(20.dp))
                     }
                     Spacer(Modifier.weight(1f))
+                    GlassButton(onClick = { searchVisible = !searchVisible; if (!searchVisible) searchQuery = "" }) {
+                        Icon(Icons.Default.Search, "Rechercher un objet", tint = Color.White, modifier = Modifier.size(20.dp))
+                    }
+                    Spacer(Modifier.width(8.dp))
                     Box {
                         GlassButton(onClick = { menuOpen = true }) {
-                            Icon(Icons.Default.MoreVert, "Menu", tint = Color.White, modifier = Modifier.size(20.dp))
+                            Icon(Icons.Default.MoreVert, "Plus d'options", tint = Color.White, modifier = Modifier.size(20.dp))
                         }
                         DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
-                            DropdownMenuItem(text = { Text("🔍  Rechercher") }, onClick = { menuOpen = false; searchVisible = !searchVisible; if (!searchVisible) searchQuery = "" })
-                            DropdownMenuItem(text = { Text("✏️  Renommer") }, onClick = { menuOpen = false; onRename() })
-                            DropdownMenuItem(text = { Text("📑  Dupliquer") }, onClick = { menuOpen = false; onDuplicate() })
-                            DropdownMenuItem(text = { Text("📋  Sauvegarder comme modèle") }, onClick = { menuOpen = false; onSaveTemplate() })
-                            DropdownMenuItem(text = { Text("🔄  Tout décocher") }, onClick = { menuOpen = false; onReset() })
-                            DropdownMenuItem(text = { Text("📤  Partager") }, onClick = { menuOpen = false; onShare() })
-                            DropdownMenuItem(text = { Text("🗑️  Supprimer", color = c.errorText) }, onClick = { menuOpen = false; onDelete() })
+                            DropdownMenuItem(
+                                text = { Text("Renommer") },
+                                leadingIcon = { Icon(Icons.Default.Edit, null) },
+                                onClick = { menuOpen = false; onRename() },
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Dupliquer") },
+                                leadingIcon = { Icon(Icons.Default.ContentCopy, null) },
+                                onClick = { menuOpen = false; onDuplicate() },
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Sauvegarder comme modèle") },
+                                leadingIcon = { Icon(Icons.Default.Bookmark, null) },
+                                onClick = { menuOpen = false; onSaveTemplate() },
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Tout décocher") },
+                                leadingIcon = { Icon(Icons.Default.RestartAlt, null) },
+                                onClick = { menuOpen = false; onReset() },
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Partager") },
+                                leadingIcon = { Icon(Icons.Default.Share, null) },
+                                onClick = { menuOpen = false; onShare() },
+                            )
+                            HorizontalDivider()
+                            DropdownMenuItem(
+                                text = { Text("Supprimer", color = c.errorText) },
+                                leadingIcon = { Icon(Icons.Default.Delete, null, tint = c.errorText) },
+                                onClick = { menuOpen = false; onDelete() },
+                            )
                         }
                     }
                 }
@@ -152,7 +190,7 @@ fun ListScreen(
                     .padding(horizontal = 16.dp, vertical = 4.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text("🔍", fontSize = 14.sp)
+                Icon(Icons.Default.Search, null, tint = c.onSurfaceVariant, modifier = Modifier.size(18.dp))
                 Spacer(Modifier.width(8.dp))
                 Box(Modifier.weight(1f)) {
                     if (searchQuery.isEmpty()) Text("Rechercher un objet…", color = c.onSurfaceVariant, fontSize = 14.sp)
@@ -163,8 +201,16 @@ fun ListScreen(
                     )
                 }
                 if (searchQuery.isNotEmpty()) {
-                    Text("✕", color = c.onSurfaceVariant, fontSize = 16.sp, fontWeight = FontWeight.Bold,
-                        modifier = Modifier.clip(CircleShape).clickable { searchQuery = "" }.padding(8.dp))
+                    Box(
+                        Modifier.size(48.dp).clip(CircleShape).clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = ripple(bounded = false, radius = 20.dp),
+                            onClick = { searchQuery = "" },
+                        ),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Icon(Icons.Default.Close, "Effacer la recherche", tint = c.onSurfaceVariant, modifier = Modifier.size(16.dp))
+                    }
                 }
             }
         }
@@ -182,7 +228,7 @@ fun ListScreen(
                         Modifier.fillMaxWidth().padding(top = 48.dp, start = 32.dp, end = 32.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
-                        Text("🔍", fontSize = 34.sp)
+                        Icon(Icons.Default.Search, null, tint = c.onSurfaceVariant, modifier = Modifier.size(34.dp))
                         Spacer(Modifier.height(14.dp))
                         Text("Aucun objet trouvé", color = c.onSurface, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                         Spacer(Modifier.height(6.dp))
@@ -241,7 +287,7 @@ fun ListScreen(
                 }
             }
             item {
-                Text("← Glisser pour retirer un objet →", color = c.onSurfaceVariant, fontSize = 12.sp, fontWeight = FontWeight.Medium,
+                Text("← Glisser vers la gauche pour retirer un objet", color = c.onSurfaceVariant, fontSize = 12.sp, fontWeight = FontWeight.Medium,
                     modifier = Modifier.fillMaxWidth().padding(vertical = 10.dp), textAlign = androidx.compose.ui.text.style.TextAlign.Center)
             }
         }
@@ -324,7 +370,7 @@ private fun AddItemRow(onAdd: (String) -> Unit) {
             Modifier.weight(1f).clip(CircleShape).background(c.surface).padding(horizontal = 14.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text("＋", color = c.primary, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            Icon(Icons.Default.Add, null, tint = c.primary, modifier = Modifier.size(18.dp))
             Spacer(Modifier.width(6.dp))
             Box(Modifier.weight(1f)) {
                 if (text.isEmpty()) Text("Ajouter", color = c.onSurfaceVariant, fontSize = 14.sp)
@@ -340,10 +386,12 @@ private fun AddItemRow(onAdd: (String) -> Unit) {
         }
         if (text.isNotBlank()) {
             Spacer(Modifier.width(8.dp))
-            Text(
-                "OK", color = c.primary, fontWeight = FontWeight.ExtraBold, fontSize = 13.sp,
-                modifier = Modifier.clip(CircleShape).clickable { submit() }.padding(horizontal = 14.dp, vertical = 8.dp),
-            )
+            Box(
+                Modifier.defaultMinSize(minWidth = 48.dp, minHeight = 48.dp).clip(CircleShape).clickable { submit() }.padding(horizontal = 14.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text("OK", color = c.primary, fontWeight = FontWeight.ExtraBold, fontSize = 13.sp)
+            }
         }
     }
 }

@@ -42,6 +42,9 @@ fun blobShape(): Shape = GenericShape { size, _ ->
     close()
 }
 
+/** Zone tactile minimale recommandée (48dp) — le visuel peut rester plus petit. */
+private val MinTouchTarget = 48.dp
+
 @Composable
 fun AppCheckbox(checked: Boolean, onToggle: () -> Unit, modifier: Modifier = Modifier) {
     val c = AppTheme.colors
@@ -50,19 +53,25 @@ fun AppCheckbox(checked: Boolean, onToggle: () -> Unit, modifier: Modifier = Mod
     val desc = if (checked) "Coché" else "Non coché"
     Box(
         modifier
-            .size(28.dp)
-            .clip(RoundedCornerShape(7.dp))
-            .background(bg)
-            .border(2.dp, border, RoundedCornerShape(7.dp))
+            .size(MinTouchTarget)
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
-                indication = ripple(bounded = false, radius = 20.dp),
+                indication = ripple(bounded = false, radius = 24.dp),
                 onClick = onToggle,
             )
             .semantics { contentDescription = desc },
         contentAlignment = Alignment.Center,
     ) {
-        if (checked) Icon(Icons.Default.Check, null, tint = c.onPrimary, modifier = Modifier.size(16.dp))
+        Box(
+            Modifier
+                .size(28.dp)
+                .clip(RoundedCornerShape(7.dp))
+                .background(bg)
+                .border(2.dp, border, RoundedCornerShape(7.dp)),
+            contentAlignment = Alignment.Center,
+        ) {
+            if (checked) Icon(Icons.Default.Check, null, tint = c.onPrimary, modifier = Modifier.size(16.dp))
+        }
     }
 }
 
@@ -173,15 +182,17 @@ fun QtyStepper(
 
 @Composable
 private fun StepBtn(label: String, color: Color, size: androidx.compose.ui.unit.Dp, onClick: () -> Unit) {
+    val desc = if (label == "+") "Augmenter la quantité" else "Diminuer la quantité"
     Box(
         Modifier
-            .size(size)
+            .size(maxOf(size, MinTouchTarget))
             .clip(CircleShape)
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = ripple(bounded = false, radius = size / 2),
                 onClick = onClick,
-            ),
+            )
+            .semantics { contentDescription = desc },
         contentAlignment = Alignment.Center,
     ) {
         Text(label, color = color, fontSize = if (size > 30.dp) 18.sp else 16.sp, fontWeight = FontWeight.Bold)
