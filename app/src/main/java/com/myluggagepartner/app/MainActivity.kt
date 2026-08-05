@@ -351,13 +351,13 @@ private fun SnackBar(msg: String, undo: (() -> Unit)?, onUndo: () -> Unit, modif
     val c = AppTheme.colors
     Row(
         modifier.fillMaxWidth().padding(16.dp).clip(RoundedCornerShape(16.dp))
-            .background(if (c.isDark) Color(0xFFF0EBE5) else Color(0xFF352F2C))
+            .background(if (c.isDark) Color(0xFFFBFAF7) else Color(0xFF14213D))
             .padding(horizontal = 18.dp, vertical = 15.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(msg, color = if (c.isDark) Color(0xFF241914) else Color(0xFFF3EFEC), fontSize = 14.sp, modifier = Modifier.weight(1f))
+        Text(msg, color = if (c.isDark) Color(0xFF14213D) else Color(0xFFFBFAF7), fontSize = 14.sp, modifier = Modifier.weight(1f))
         if (undo != null) {
-            Text("Annuler", color = if (c.isDark) Color(0xFF9E4522) else Color(0xFFFFB59B), fontWeight = FontWeight.ExtraBold, fontSize = 14.sp,
+            Text("Annuler", color = if (c.isDark) Color(0xFFD8232A) else Color(0xFFF0796E), fontWeight = FontWeight.ExtraBold, fontSize = 14.sp,
                 modifier = Modifier.clip(RoundedCornerShape(10.dp)).clickable { onUndo() }.padding(horizontal = 8.dp, vertical = 6.dp))
         }
     }

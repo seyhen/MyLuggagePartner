@@ -88,8 +88,8 @@ fun ListScreen(
             Box(
                 Modifier.fillMaxSize().background(
                     Brush.verticalGradient(
-                        0f to Color(0x66140C08), 0.4f to Color.Transparent,
-                        0.48f to Color.Transparent, 1f to Color(0x99140C08),
+                        0f to Color(0x660A1420), 0.4f to Color.Transparent,
+                        0.48f to Color.Transparent, 1f to Color(0x990A1420),
                     ),
                 ),
             )

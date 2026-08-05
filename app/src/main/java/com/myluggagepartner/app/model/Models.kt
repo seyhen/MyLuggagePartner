@@ -24,14 +24,17 @@ enum class TripType(val label: String, val emoji: String) {
     AFFAIRES("Affaires", "💼"),
     CAMPING("Camping", "⛺");
 
-    /** Gradient "photo" simulé (remplaçable par une vraie image plus tard). */
+    /**
+     * Gradient "photo" simulé — chaque type garde sa teinte de ciel propre,
+     * mais tous convergent vers l'encre marine (#14213D) de l'identité « par avion ».
+     */
     fun gradient(): List<Color> = when (this) {
-        VILLE -> listOf(0xFFC8956A, 0xFFA0563B, 0xFF6B3422, 0xFF3A1C10)
-        PLAGE -> listOf(0xFF5BA4C9, 0xFF2E8EB5, 0xFFD4A96A, 0xFFE8C49A)
-        RANDO -> listOf(0xFF6B8F5E, 0xFF4A7A3C, 0xFF2C5A22, 0xFF1A3A12)
-        SKI -> listOf(0xFFB8CFDF, 0xFF8AADCC, 0xFF5A7FA0, 0xFF3A5570)
-        AFFAIRES -> listOf(0xFF7A8A9A, 0xFF4A5A6A, 0xFF2A3A4A, 0xFF1A2A3A)
-        CAMPING -> listOf(0xFF8FAA6A, 0xFF5A7A3A, 0xFF3A5A2A, 0xFF2A3A1A)
+        VILLE -> listOf(0xFF8B9DC3, 0xFF5A6B9E, 0xFF2E3A5C, 0xFF14213D)     // crépuscule urbain
+        PLAGE -> listOf(0xFF7EC8E3, 0xFF3E8FB0, 0xFF1F4A63, 0xFF14213D)     // ciel et mer
+        RANDO -> listOf(0xFFA8C47E, 0xFF6B9152, 0xFF375A3E, 0xFF14213D)    // prairie d'altitude
+        SKI -> listOf(0xFFD4E8F0, 0xFF9BC0D9, 0xFF4A7B9E, 0xFF14213D)      // glacier
+        AFFAIRES -> listOf(0xFF9AA5B5, 0xFF6B7A94, 0xFF3A4A63, 0xFF14213D) // acier
+        CAMPING -> listOf(0xFF5C8F94, 0xFF3E6B72, 0xFF25454C, 0xFF14213D)  // lac au crépuscule
     }.map { Color(it) }
 }
 
