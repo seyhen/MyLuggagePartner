@@ -31,6 +31,7 @@ data class AppColors(
     val error: Color,
     val errorText: Color,
     val outline: Color,
+    val reminder: Color,
     val isDark: Boolean,
 )
 
@@ -49,6 +50,7 @@ private val LightAppColors = AppColors(
     error = LightError,
     errorText = LightErrorText,
     outline = LightOutline,
+    reminder = LightReminder,
     isDark = false,
 )
 
@@ -67,6 +69,7 @@ private val DarkAppColors = AppColors(
     error = DarkError,
     errorText = DarkErrorText,
     outline = DarkOutline,
+    reminder = DarkReminder,
     isDark = true,
 )
 

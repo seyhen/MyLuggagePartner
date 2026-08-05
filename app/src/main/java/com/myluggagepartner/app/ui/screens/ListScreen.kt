@@ -28,12 +28,17 @@ import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.foundation.Canvas
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
@@ -73,8 +78,8 @@ fun ListScreen(
 ) {
     val c = AppTheme.colors
     var menuOpen by remember { mutableStateOf(false) }
-    var searchQuery by remember { mutableStateOf("") }
-    var searchVisible by remember { mutableStateOf(false) }
+    var searchQuery by rememberSaveable { mutableStateOf("") }
+    var searchVisible by rememberSaveable { mutableStateOf(false) }
     val ready = trip.done == trip.total && trip.total > 0
 
     Column(Modifier.fillMaxSize().background(c.surface).navigationBarsPadding()) {
@@ -150,13 +155,7 @@ fun ListScreen(
             }
         }
 
-        // ——— Blob progression ———
-        val blobBg by animateColorAsState(
-            if (ready) c.primary else c.secondaryContainer, label = "blobBg",
-        )
-        val blobFg by animateColorAsState(
-            if (ready) c.onPrimary else c.onSecondaryContainer, label = "blobFg",
-        )
+        // ——— Blob progression / tampon « prête » ———
         val progressColor by animateColorAsState(
             if (ready) c.secondaryContainer else c.primary, label = "progressColor",
         )
@@ -165,12 +164,31 @@ fun ListScreen(
             Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 14.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Box(
-                Modifier.size(64.dp).clip(blobShape()).background(blobBg),
-                contentAlignment = Alignment.Center,
-            ) {
-                if (ready) Text("✓", style = TitleCard, color = blobFg, fontSize = 26.sp, fontWeight = FontWeight.ExtraBold)
-                else Text("${trip.done}/${trip.total}", style = TitleCard, color = blobFg, fontSize = 18.sp, fontWeight = FontWeight.ExtraBold)
+            if (ready) {
+                // Tampon d'encre « valise prête » — le geste signature de la valise bouclée.
+                Box(
+                    Modifier.size(64.dp).rotate(-7f),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Canvas(Modifier.fillMaxSize()) {
+                        drawCircle(
+                            color = c.reminder,
+                            radius = size.minDimension / 2 - 3.dp.toPx(),
+                            style = Stroke(width = 2.dp.toPx(), pathEffect = PathEffect.dashPathEffect(floatArrayOf(6.dp.toPx(), 4.dp.toPx()))),
+                        )
+                    }
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text("PRÊTE", color = c.reminder, fontSize = 12.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = 1.sp)
+                        Text("✓", color = c.reminder, fontSize = 16.sp, fontWeight = FontWeight.ExtraBold)
+                    }
+                }
+            } else {
+                Box(
+                    Modifier.size(64.dp).clip(blobShape()).background(c.secondaryContainer),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text("${trip.done}/${trip.total}", style = TitleCard, color = c.onSecondaryContainer, fontSize = 18.sp, fontWeight = FontWeight.ExtraBold)
+                }
             }
             Spacer(Modifier.width(14.dp))
             Column(Modifier.weight(1f)) {
@@ -360,7 +378,7 @@ private fun SwipeItem(item: PackItem, onToggle: () -> Unit, onQty: (Int) -> Unit
 @Composable
 private fun AddItemRow(onAdd: (String) -> Unit) {
     val c = AppTheme.colors
-    var text by remember { mutableStateOf("") }
+    var text by rememberSaveable { mutableStateOf("") }
     val focusRequester = remember { FocusRequester() }
     val submit = {
         if (text.isNotBlank()) { onAdd(text); text = "" }

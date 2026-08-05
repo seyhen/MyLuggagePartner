@@ -26,6 +26,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDateRangePickerState
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -166,7 +167,7 @@ private fun StepDestination(draft: Draft, onDraft: ((Draft) -> Draft) -> Unit) {
             color = c.onSurfaceVariant, fontSize = 13.sp, lineHeight = 20.sp,
         )
 
-        var showPicker by remember { mutableStateOf(false) }
+        var showPicker by rememberSaveable { mutableStateOf(false) }
         val dateLabel = if (draft.from != null && draft.to != null) {
             "${draft.from.dayOfMonth}/${draft.from.monthValue} — ${draft.to.dayOfMonth}/${draft.to.monthValue}/${draft.to.year}"
         } else "Sélectionner les dates"

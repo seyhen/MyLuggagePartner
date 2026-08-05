@@ -11,6 +11,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.TileMode
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
@@ -169,6 +171,26 @@ private fun PhotoTripCard(trip: Trip, onClick: () -> Unit) {
             )
             .semantics(mergeDescendants = true) {},
     ) {
+        // Liseré « par avion » — signale la valise dont le départ approche.
+        Box(
+            Modifier
+                .fillMaxWidth()
+                .height(9.dp)
+                .align(Alignment.TopCenter)
+                .background(
+                    Brush.linearGradient(
+                        colors = listOf(
+                            Color(0xFFFBFAF7), Color(0xFFFBFAF7),
+                            Color(0xFFD8232A), Color(0xFFD8232A),
+                            Color(0xFFFBFAF7), Color(0xFFFBFAF7),
+                            Color(0xFF0B5FA5), Color(0xFF0B5FA5),
+                        ),
+                        start = Offset(0f, 0f),
+                        end = Offset(26f, 26f),
+                        tileMode = TileMode.Repeated,
+                    ),
+                ),
+        )
         // Scrim dégradé
         Box(
             Modifier.fillMaxSize().background(
@@ -183,7 +205,7 @@ private fun PhotoTripCard(trip: Trip, onClick: () -> Unit) {
                 Chip("${trip.type.emoji} ${trip.type.label}", Color(0xEBFFFFFF), Color(0xFF241914))
                 if (trip.dates.isNotBlank()) Chip(trip.dates, Color(0x73140C08), Color(0xE6FFFFFF))
                 countdownLabel(trip)?.let { label ->
-                    Chip("🔔 $label", Color(0xEBFFFFFF), Color(0xFF9E4522))
+                    Chip("🔔 $label", Color(0xEBFFFFFF), Color(0xFFD8232A))
                 }
             }
             Column {
@@ -228,8 +250,8 @@ private fun FlatTripCard(trip: Trip, onClick: () -> Unit) {
                     Spacer(Modifier.width(8.dp))
                     Text(
                         "🔔 $label", fontSize = 11.sp, fontWeight = FontWeight.Bold,
-                        color = Color(0xFF9E4522),
-                        modifier = Modifier.clip(CircleShape).background(Color(0x1A9E4522)).padding(horizontal = 8.dp, vertical = 3.dp),
+                        color = c.reminder,
+                        modifier = Modifier.clip(CircleShape).background(c.reminder.copy(alpha = 0.12f)).padding(horizontal = 8.dp, vertical = 3.dp),
                     )
                 }
             }

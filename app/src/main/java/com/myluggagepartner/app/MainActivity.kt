@@ -24,6 +24,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.listSaver
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -56,6 +58,50 @@ private sealed interface Dialog {
     data object ResetChecks : Dialog
     data class DeleteTemplate(val id: Long) : Dialog
 }
+
+/* Savers : l'état de navigation doit survivre à la rotation / mort du process. */
+private val ScreenSaver = listSaver<Screen, Any>(
+    save = { screen ->
+        when (screen) {
+            Screen.Home -> listOf("home")
+            Screen.Create -> listOf("create")
+            Screen.Settings -> listOf("settings")
+            is Screen.ListView -> listOf("list", screen.tripId)
+        }
+    },
+    restore = { list ->
+        when (list.firstOrNull()) {
+            "create" -> Screen.Create
+            "settings" -> Screen.Settings
+            "list" -> (list.getOrNull(1) as? Long)?.let { Screen.ListView(it) } ?: Screen.Home
+            else -> Screen.Home
+        }
+    },
+)
+
+// Une liste vide n'est pas sauvegardée par listSaver : on retombe donc sur null (aucun dialog).
+private val DialogSaver = listSaver<Dialog?, Any>(
+    save = { dialog ->
+        when (dialog) {
+            null -> emptyList()
+            Dialog.Rename -> listOf("rename")
+            Dialog.Delete -> listOf("delete")
+            Dialog.Premium -> listOf("premium")
+            Dialog.ResetChecks -> listOf("reset")
+            is Dialog.DeleteTemplate -> listOf("deleteTemplate", dialog.id)
+        }
+    },
+    restore = { list ->
+        when (list.firstOrNull()) {
+            "rename" -> Dialog.Rename
+            "delete" -> Dialog.Delete
+            "premium" -> Dialog.Premium
+            "reset" -> Dialog.ResetChecks
+            "deleteTemplate" -> (list.getOrNull(1) as? Long)?.let { Dialog.DeleteTemplate(it) }
+            else -> null
+        }
+    },
+)
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -111,10 +157,11 @@ private fun AppRoot(vm: AppViewModel = viewModel()) {
             OnboardingScreen(onDone = { vm.completeOnboarding() })
             return@MyLuggageTheme
         }
-        var screen by remember { mutableStateOf<Screen>(Screen.Home) }
-        var dialog by remember { mutableStateOf<Dialog?>(null) }
+        var screen by rememberSaveable(stateSaver = ScreenSaver) { mutableStateOf<Screen>(Screen.Home) }
+        var dialog by rememberSaveable(stateSaver = DialogSaver) { mutableStateOf<Dialog?>(null) }
+        // Le snackbar porte un lambda "annuler" non sérialisable : volontairement éphémère.
         var snack by remember { mutableStateOf<Pair<String, (() -> Unit)?>?>(null) }
-        var renameText by remember { mutableStateOf("") }
+        var renameText by rememberSaveable { mutableStateOf("") }
 
         // Auto-dismiss du snackbar
         LaunchedEffect(snack) {
