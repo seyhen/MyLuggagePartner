@@ -72,8 +72,8 @@ fun HomeScreen(
             trip.departureDateEpoch ?: Long.MAX_VALUE
         })
     }
-    // Le prochain voyage à venir est toujours mis en avant — c'est la carte qui porte le liseré signature.
-    val featuredTripId = sortedTrips.firstOrNull()?.id
+    // Le prochain départ imminent (J-7 ou moins) est mis en avant visuellement.
+    val featuredTripId = sortedTrips.firstOrNull { countdownLabel(it) != null }?.id
     Box(Modifier.fillMaxSize().background(c.surface).windowInsetsPadding(WindowInsets.safeDrawing)) {
         Column(Modifier.fillMaxSize()) {
             // Nav bar custom
@@ -195,15 +195,15 @@ private fun PhotoTripCard(trip: Trip, onClick: () -> Unit) {
         Box(
             Modifier.fillMaxSize().background(
                 Brush.verticalGradient(
-                    0f to Color(0x590A1420), 0.34f to Color.Transparent,
-                    0.45f to Color.Transparent, 1f to Color(0x9E0A1420),
+                    0f to Color(0x59140C08), 0.34f to Color.Transparent,
+                    0.45f to Color.Transparent, 1f to Color(0x9E140C08),
                 ),
             ),
         )
         Column(Modifier.fillMaxSize().padding(20.dp), verticalArrangement = Arrangement.SpaceBetween) {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Chip("${trip.type.emoji} ${trip.type.label}", Color(0xEBFFFFFF), Color(0xFF14213D))
-                if (trip.dates.isNotBlank()) Chip(trip.dates, Color(0x730A1420), Color(0xE6FFFFFF))
+                Chip("${trip.type.emoji} ${trip.type.label}", Color(0xEBFFFFFF), Color(0xFF241914))
+                if (trip.dates.isNotBlank()) Chip(trip.dates, Color(0x73140C08), Color(0xE6FFFFFF))
                 countdownLabel(trip)?.let { label ->
                     Chip("🔔 $label", Color(0xEBFFFFFF), Color(0xFFD8232A))
                 }

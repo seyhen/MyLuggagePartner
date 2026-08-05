@@ -74,7 +74,7 @@ fun SettingsScreen(
                         Modifier.clip(CircleShape).background(c.secondaryCta)
                             .clickable(interactionSource = remember { MutableInteractionSource() }, indication = ripple(), onClick = onUnlock)
                             .padding(horizontal = 24.dp, vertical = 14.dp),
-                    ) { Text("Débloquer · 3,99 €", color = if (c.isDark) c.secondaryContainer else Color(0xFFFBFAF7), fontWeight = FontWeight.Bold, fontSize = 15.sp) }
+                    ) { Text("Débloquer · 3,99 €", color = if (c.isDark) c.secondaryContainer else Color(0xFFF5F8E8), fontWeight = FontWeight.Bold, fontSize = 15.sp) }
                 } else {
                     Text("Version illimitée ✓", style = TitleCard, color = c.onSecondaryContainer)
                     Spacer(Modifier.height(10.dp))
