@@ -201,18 +201,18 @@ private fun FeaturedTripCard(trip: Trip, onClick: () -> Unit) {
         Box(
             Modifier
                 .fillMaxWidth()
-                .height(232.dp)
+                .defaultMinSize(minHeight = 188.dp)
                 .background(Brush.linearGradient(trip.type.gradient())),
         ) {
             Box(
                 Modifier.fillMaxSize().background(
                     Brush.verticalGradient(
-                        0f to Color(0x4D0A1420), 0.34f to Color.Transparent,
-                        0.45f to Color.Transparent, 1f to Color(0xA60A1420),
+                        0f to Color(0x4D0A1420), 0.3f to Color(0x730A1420),
+                        0.7f to Color(0x730A1420), 1f to Color(0xA60A1420),
                     ),
                 ),
             )
-            Column(Modifier.fillMaxSize().padding(18.dp), verticalArrangement = Arrangement.SpaceBetween) {
+            Column(Modifier.fillMaxWidth().padding(18.dp)) {
                 Row(verticalAlignment = Alignment.Top) {
                     TypeStamp(trip.type.code, 46.dp, Color.White, Color(0x8CFFFFFF), Color(0x26FFFFFF))
                     Spacer(Modifier.width(10.dp))
@@ -228,17 +228,34 @@ private fun FeaturedTripCard(trip: Trip, onClick: () -> Unit) {
                         Chip(label, Color(0xFFD8232A), Color.White)
                     }
                 }
-                Column {
-                    Text(trip.name, style = DisplayMedium, color = Color.White)
-                    Spacer(Modifier.height(10.dp))
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        ProgressBar(
-                            trip.progress, Modifier.weight(1f), 10.dp,
-                            track = Color(0x40FFFFFF), fill = Color.White,
+
+                // Aperçu du contenu — ce qui reste à préparer, pour donner une raison d'ouvrir.
+                val pending = remember(trip.items) { trip.items.filterNot { it.checked }.take(3) }
+                Spacer(Modifier.height(22.dp))
+                if (pending.isNotEmpty()) {
+                    Text("À VÉRIFIER", style = LabelStamp, color = Color(0x99FFFFFF))
+                    Spacer(Modifier.height(8.dp))
+                    pending.forEach { item ->
+                        Text(
+                            "·  ${item.name}",
+                            color = Color(0xE6FFFFFF), fontSize = 14.sp,
+                            modifier = Modifier.padding(vertical = 2.dp),
                         )
-                        Spacer(Modifier.width(10.dp))
-                        Text("${trip.done}/${trip.total}", style = DataMono, color = Color.White, fontSize = 13.sp)
                     }
+                } else {
+                    Text("TOUT EST PRÊT", style = LabelStamp, color = Color(0xFFD8232A))
+                }
+
+                Spacer(Modifier.height(20.dp))
+                Text(trip.name, style = DisplayMedium, color = Color.White)
+                Spacer(Modifier.height(10.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    ProgressBar(
+                        trip.progress, Modifier.weight(1f), 10.dp,
+                        track = Color(0x40FFFFFF), fill = Color.White,
+                    )
+                    Spacer(Modifier.width(10.dp))
+                    Text("${trip.done}/${trip.total}", style = DataMono, color = Color.White, fontSize = 13.sp)
                 }
             }
         }

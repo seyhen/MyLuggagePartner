@@ -259,9 +259,9 @@ private fun Field(label: String, value: String, placeholder: String, onChange: (
 private fun StepType(draft: Draft, onDraft: ((Draft) -> Draft) -> Unit) {
     val c = AppTheme.colors
     val types = TripType.entries
-    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         types.chunked(2).forEach { row ->
-            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 row.forEach { type ->
                     val sel = draft.type == type
                     Box(
@@ -278,24 +278,24 @@ private fun StepType(draft: Draft, onDraft: ((Draft) -> Draft) -> Unit) {
                                 indication = ripple(),
                                 onClick = { onDraft { it.copy(type = type) } },
                             )
-                            .padding(14.dp),
+                            .padding(20.dp),
                     ) {
                         Column {
                             Box(
                                 Modifier
-                                    .size(42.dp)
+                                    .size(58.dp)
                                     .clip(RoundedCornerShape(Radius.xs))
                                     .background(if (sel) c.primary else c.surface)
                                     .border(1.5.dp, if (sel) c.primary else c.outline, RoundedCornerShape(Radius.xs)),
                                 contentAlignment = Alignment.Center,
                             ) {
                                 Text(
-                                    type.code, style = DataMono, fontSize = 12.sp,
+                                    type.code, style = DataMono, fontSize = 15.sp,
                                     color = if (sel) c.onPrimary else c.onSurfaceVariant,
                                 )
                             }
-                            Spacer(Modifier.height(10.dp))
-                            Text(type.label.uppercase(), style = CategoryTitle, color = c.onSurface, fontSize = 12.sp)
+                            Spacer(Modifier.height(14.dp))
+                            Text(type.label.uppercase(), style = CategoryTitle, color = c.onSurface, fontSize = 13.sp)
                         }
                         if (sel) Box(
                             Modifier.align(Alignment.TopEnd).size(22.dp)
