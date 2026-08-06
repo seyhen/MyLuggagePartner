@@ -19,6 +19,7 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -123,24 +124,26 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+/** Bordereau de contenu — même langage que l'app : capitales, cases, quantités alignées. */
 private fun formatTripText(trip: Trip): String = buildString {
-    appendLine("✈️ ${trip.name}")
-    if (trip.dates.isNotBlank()) appendLine("📅 ${trip.dates} · ${trip.type.label}")
-    appendLine("${trip.done}/${trip.total} articles prêts")
+    appendLine("${trip.name.uppercase()}  ·  ${trip.type.code}")
+    if (trip.dates.isNotBlank()) appendLine(trip.dates)
+    appendLine("${trip.done}/${trip.total} vérifiés")
+    appendLine("—".repeat(28))
     appendLine()
     Category.entries.forEach { cat ->
         val items = trip.items.filter { it.category == cat }
         if (items.isNotEmpty()) {
-            appendLine("${cat.emoji} ${cat.label}")
+            appendLine(cat.label.uppercase())
             items.forEach { item ->
-                val check = if (item.checked) "✅" else "⬜"
-                val qty = if (item.qty > 1) " ×${item.qty}" else ""
+                val check = if (item.checked) "[x]" else "[ ]"
+                val qty = if (item.qty > 1) "  ×${item.qty}" else ""
                 appendLine("  $check ${item.name}$qty")
             }
             appendLine()
         }
     }
-    append("— MyLuggagePartner")
+    append("MyLuggagePartner")
 }
 
 @Composable
@@ -345,37 +348,60 @@ private fun AppRoot(vm: AppViewModel = viewModel()) {
     }
 }
 
-/* ————— Snackbar ————— */
+/* ————— Snackbar : bandeau d'accusé de réception ————— */
 @Composable
 private fun SnackBar(msg: String, undo: (() -> Unit)?, onUndo: () -> Unit, modifier: Modifier) {
     val c = AppTheme.colors
     Row(
-        modifier.fillMaxWidth().padding(16.dp).clip(RoundedCornerShape(16.dp))
-            .background(if (c.isDark) Color(0xFFF0EBE5) else Color(0xFF352F2C))
-            .padding(horizontal = 18.dp, vertical = 15.dp),
+        modifier.fillMaxWidth().padding(16.dp).clip(RoundedCornerShape(Radius.sm))
+            .background(if (c.isDark) Color(0xFFEDEDE8) else Color(0xFF14213D))
+            .padding(horizontal = 16.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(msg, color = if (c.isDark) Color(0xFF241914) else Color(0xFFF3EFEC), fontSize = 14.sp, modifier = Modifier.weight(1f))
+        Text(
+            msg,
+            color = if (c.isDark) Color(0xFF14213D) else Color(0xFFFBFAF7),
+            fontSize = 14.sp, modifier = Modifier.weight(1f),
+        )
         if (undo != null) {
-            Text("Annuler", color = if (c.isDark) Color(0xFF9E4522) else Color(0xFFFFB59B), fontWeight = FontWeight.ExtraBold, fontSize = 14.sp,
-                modifier = Modifier.clip(RoundedCornerShape(10.dp)).clickable { onUndo() }.padding(horizontal = 8.dp, vertical = 6.dp))
+            Box(
+                Modifier
+                    .defaultMinSize(minHeight = 44.dp)
+                    .clip(RoundedCornerShape(Radius.xs))
+                    .clickable { onUndo() }
+                    .padding(horizontal = 10.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    "ANNULER", style = LabelStamp,
+                    color = if (c.isDark) Color(0xFFD8232A) else Color(0xFFF0796E),
+                )
+            }
         }
     }
 }
 
-/* ————— Dialog primitives ————— */
+/* ————— Dialog primitives : cases de formulaire ————— */
 @Composable
 private fun AppDialog(onDismiss: () -> Unit, content: @Composable ColumnScope.() -> Unit) {
     val c = AppTheme.colors
     androidx.compose.ui.window.Dialog(onDismissRequest = onDismiss) {
         Column(
-            Modifier.width(324.dp).clip(RoundedCornerShape(30.dp)).background(c.surfaceContainer).padding(26.dp),
-            content = content,
-        )
+            Modifier
+                .width(330.dp)
+                .clip(RoundedCornerShape(Radius.md))
+                .background(c.surfaceContainer)
+                .border(1.dp, c.outline, RoundedCornerShape(Radius.md)),
+        ) {
+            AirmailBand(height = 7.dp)
+            Column(Modifier.padding(22.dp), content = content)
+        }
     }
 }
 
-@Composable private fun DialogTitle(t: String) = Text(t, style = TitleCard, color = AppTheme.colors.onSurface, fontSize = 21.sp)
+@Composable private fun DialogTitle(t: String) =
+    Text(t.uppercase(), style = TitleCard, color = AppTheme.colors.onSurface, fontSize = 19.sp)
+
 @Composable private fun DialogBody(t: String) {
     Spacer(Modifier.height(12.dp))
     Text(t, color = AppTheme.colors.onSurfaceVariant, fontSize = 14.sp, lineHeight = 20.sp)
@@ -388,7 +414,8 @@ private fun DialogTextField(value: String, onChange: (String) -> Unit) {
         value = value, onValueChange = onChange,
         textStyle = LocalTextStyle.current.copy(color = c.onSurface, fontSize = 16.sp),
         cursorBrush = androidx.compose.ui.graphics.SolidColor(c.primary), singleLine = true,
-        modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(c.surface).padding(14.dp),
+        modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(Radius.xs)).background(c.surface)
+            .border(1.5.dp, c.outline, RoundedCornerShape(Radius.xs)).padding(14.dp),
     )
 }
 
@@ -401,14 +428,23 @@ private fun DialogActions(
     onConfirm: () -> Unit,
 ) {
     val c = AppTheme.colors
-    Spacer(Modifier.height(16.dp))
+    Spacer(Modifier.height(20.dp))
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End, verticalAlignment = Alignment.CenterVertically) {
-        Box(Modifier.defaultMinSize(minHeight = 48.dp).clip(RoundedCornerShape(999.dp)).clickable { onCancel() }.padding(horizontal = 16.dp), contentAlignment = Alignment.Center) {
-            Text(cancel, color = c.primary, fontWeight = FontWeight.Bold, fontSize = 15.sp)
+        Box(
+            Modifier.defaultMinSize(minHeight = 48.dp).clip(RoundedCornerShape(Radius.xs))
+                .clickable { onCancel() }.padding(horizontal = 14.dp),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(cancel.uppercase(), style = LabelStamp, color = c.onSurfaceVariant)
         }
-        Spacer(Modifier.width(4.dp))
-        Box(Modifier.defaultMinSize(minHeight = 48.dp).clip(RoundedCornerShape(999.dp)).clickable { onConfirm() }.padding(horizontal = 16.dp), contentAlignment = Alignment.Center) {
-            Text(confirm, color = if (destructive) c.errorText else c.primary, fontWeight = FontWeight.Bold, fontSize = 15.sp)
+        Spacer(Modifier.width(6.dp))
+        Box(
+            Modifier.defaultMinSize(minHeight = 48.dp).clip(RoundedCornerShape(Radius.xs))
+                .background(if (destructive) c.errorText else c.primary)
+                .clickable { onConfirm() }.padding(horizontal = 18.dp),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(confirm.uppercase(), style = LabelStamp, color = c.onPrimary)
         }
     }
 }

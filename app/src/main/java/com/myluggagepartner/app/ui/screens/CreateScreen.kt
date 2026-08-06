@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
@@ -32,11 +31,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import java.time.Instant
-import java.time.LocalDate
 import java.time.ZoneId
 import com.myluggagepartner.app.Draft
 import com.myluggagepartner.app.model.Intensity
@@ -57,27 +54,31 @@ fun CreateScreen(
 ) {
     val c = AppTheme.colors
     val titles = mapOf(
-        1 to ("Quel type de voyage ?" to "L'essentiel — le reste est optionnel"),
-        2 to ("Où et quand ?" to "Optionnel · affine les quantités"),
-        3 to ("Derniers réglages" to "Optionnel · personnalise la liste"),
+        1 to ("NATURE DU VOYAGE" to "Section 1 sur 3 — obligatoire"),
+        2 to ("DESTINATION ET DATES" to "Section 2 sur 3 — facultatif"),
+        3 to ("DÉTAILS DU CONTENU" to "Section 3 sur 3 — facultatif"),
     )
 
     Box(Modifier.fillMaxSize().background(c.surface).windowInsetsPadding(WindowInsets.safeDrawing)) {
         Column(Modifier.fillMaxSize()) {
-            // Nav + stepper
+            // Bandeau de formulaire
             Row(
-                Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 8.dp),
+                Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 10.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                CircleIconButton(onClick = onCancel) {
+                NavIconButton(onClick = onCancel) {
                     Icon(Icons.Default.Close, "Fermer", tint = c.onSurface, modifier = Modifier.size(18.dp))
                 }
                 Spacer(Modifier.weight(1f))
-                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                // Progression du formulaire : trois cases à remplir
+                Row(horizontalArrangement = Arrangement.spacedBy(5.dp)) {
                     (1..3).forEach { s ->
                         Box(
-                            Modifier.width(42.dp).height(8.dp).clip(CircleShape)
-                                .background(c.primary.copy(alpha = if (s <= step) 1f else 0.2f)),
+                            Modifier
+                                .size(width = 26.dp, height = 7.dp)
+                                .clip(RoundedCornerShape(1.dp))
+                                .background(if (s <= step) c.primary else c.surfaceContainerLow)
+                                .border(1.dp, if (s <= step) c.primary else c.outline, RoundedCornerShape(1.dp)),
                         )
                     }
                 }
@@ -86,10 +87,12 @@ fun CreateScreen(
             Column(
                 Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = 20.dp),
             ) {
-                Spacer(Modifier.height(12.dp))
+                Spacer(Modifier.height(10.dp))
                 Text(titles[step]!!.first, style = TitleStep, color = c.onSurface)
                 Spacer(Modifier.height(8.dp))
-                Text(titles[step]!!.second, color = c.onSurfaceVariant, fontSize = 14.sp, fontWeight = FontWeight.Medium)
+                Text(titles[step]!!.second, style = LabelStamp, color = c.onSurfaceVariant)
+                Spacer(Modifier.height(14.dp))
+                AirmailBand(height = 5.dp)
                 Spacer(Modifier.height(24.dp))
 
                 when (step) {
@@ -97,46 +100,48 @@ fun CreateScreen(
                     2 -> StepDestination(draft, onDraft)
                     3 -> StepOptions(draft, onDraft)
                 }
-                Spacer(Modifier.height(130.dp))
+                Spacer(Modifier.height(140.dp))
             }
         }
 
-        // Footer
+        // Pied de formulaire
         Column(
-            Modifier.align(Alignment.BottomCenter).fillMaxWidth().padding(horizontal = 20.dp, vertical = 22.dp),
+            Modifier
+                .align(Alignment.BottomCenter)
+                .fillMaxWidth()
+                .background(c.surface)
+                .padding(horizontal = 20.dp, vertical = 18.dp),
         ) {
-            // Raccourci vers l'étape suivante — le CTA principal génère toujours la liste.
             val secondaryLabel = when {
-                step == 1 && draft.type != null -> "Personnaliser (dates, options…)"
-                step == 2 -> "Plus d'options (style, voyageurs…)"
+                step == 1 && draft.type != null -> "COMPLÉTER LES SECTIONS SUIVANTES"
+                step == 2 -> "SECTION SUIVANTE"
                 else -> null
             }
             if (secondaryLabel != null) {
-                Text(
-                    secondaryLabel,
-                    color = c.primary, fontWeight = FontWeight.SemiBold, fontSize = 14.sp,
-                    modifier = Modifier
+                Box(
+                    Modifier
                         .align(Alignment.CenterHorizontally)
                         .defaultMinSize(minHeight = 44.dp)
-                        .clip(CircleShape)
+                        .clip(RoundedCornerShape(Radius.xs))
                         .clickable { onStep(step + 1) }
-                        .padding(horizontal = 16.dp, vertical = 10.dp),
-                )
-                Spacer(Modifier.height(6.dp))
+                        .padding(horizontal = 14.dp, vertical = 10.dp),
+                    contentAlignment = Alignment.Center,
+                ) { Text(secondaryLabel, style = LabelStamp, color = c.primary) }
+                Spacer(Modifier.height(8.dp))
             }
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(
                     Modifier
                         .defaultMinSize(minHeight = 48.dp)
-                        .clip(CircleShape)
+                        .clip(RoundedCornerShape(Radius.xs))
                         .clickable { if (step > 1) onStep(step - 1) else onCancel() }
-                        .padding(horizontal = 18.dp),
-                    contentAlignment = Alignment.CenterStart,
+                        .padding(horizontal = 14.dp),
+                    contentAlignment = Alignment.Center,
                 ) {
-                    Text(if (step > 1) "Retour" else "Annuler", color = c.primary, fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                    Text(if (step > 1) "RETOUR" else "ANNULER", style = LabelStamp, color = c.onSurfaceVariant)
                 }
                 Spacer(Modifier.weight(1f))
-                CtaButton("Générer ma liste", enabled = draft.type != null, fill = step == 3) { onFinish() }
+                CtaButton("GÉNÉRER LA LISTE", enabled = draft.type != null, fill = step == 3) { onFinish() }
             }
         }
     }
@@ -148,19 +153,19 @@ private fun CtaButton(label: String, enabled: Boolean, fill: Boolean, onClick: (
     Row(
         Modifier
             .then(if (fill) Modifier.fillMaxWidth() else Modifier)
-            .clip(CircleShape)
-            .background(c.primary.copy(alpha = if (enabled) 1f else 0.35f))
+            .clip(RoundedCornerShape(Radius.sm))
+            .background(if (enabled) c.primary else c.primary.copy(alpha = 0.3f))
             .clickable(enabled = enabled) { onClick() }
-            .padding(horizontal = 28.dp, vertical = 16.dp),
+            .padding(horizontal = 24.dp, vertical = 17.dp),
         horizontalArrangement = Arrangement.Center,
-    ) { Text(label, color = c.onPrimary, fontWeight = FontWeight.SemiBold, fontSize = 16.sp) }
+    ) { Text(label, style = LabelStamp, color = c.onPrimary, fontSize = 12.sp) }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun StepDestination(draft: Draft, onDraft: ((Draft) -> Draft) -> Unit) {
     val c = AppTheme.colors
-    Column(verticalArrangement = Arrangement.spacedBy(18.dp)) {
+    Column(verticalArrangement = Arrangement.spacedBy(20.dp)) {
         Field("Destination", draft.destination, "Ex. Lisbonne") { v -> onDraft { it.copy(destination = v) } }
         Text(
             "Les dates servent à calculer les quantités. Tout reste modifiable ensuite.",
@@ -172,21 +177,24 @@ private fun StepDestination(draft: Draft, onDraft: ((Draft) -> Draft) -> Unit) {
             "${draft.from.dayOfMonth}/${draft.from.monthValue} — ${draft.to.dayOfMonth}/${draft.to.monthValue}/${draft.to.year}"
         } else "Sélectionner les dates"
 
-        Text("DATES", color = c.primary, fontSize = 12.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(start = 4.dp))
-        Row(
-            Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp))
-                .background(c.surface).border(1.5.dp, c.outline, RoundedCornerShape(16.dp))
-                .clickable { showPicker = !showPicker }
-                .padding(horizontal = 16.dp, vertical = 15.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Icon(Icons.Default.CalendarToday, null, tint = c.onSurfaceVariant, modifier = Modifier.size(16.dp))
-            Spacer(Modifier.width(10.dp))
-            Text(
-                dateLabel,
-                color = if (draft.from != null) c.onSurface else c.onSurfaceVariant,
-                fontSize = 16.sp,
-            )
+        Column(verticalArrangement = Arrangement.spacedBy(7.dp)) {
+            Text("DATES", style = LabelStamp, color = c.primary)
+            Row(
+                Modifier.fillMaxWidth().clip(RoundedCornerShape(Radius.xs))
+                    .background(c.surfaceContainer).border(1.5.dp, c.outline, RoundedCornerShape(Radius.xs))
+                    .clickable { showPicker = !showPicker }
+                    .padding(horizontal = 14.dp, vertical = 16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Icon(Icons.Default.CalendarToday, null, tint = c.onSurfaceVariant, modifier = Modifier.size(15.dp))
+                Spacer(Modifier.width(10.dp))
+                Text(
+                    dateLabel,
+                    style = if (draft.from != null) DataMono else LocalTextStyle.current,
+                    color = if (draft.from != null) c.onSurface else c.onSurfaceVariant,
+                    fontSize = 15.sp,
+                )
+            }
         }
 
         if (showPicker) {
@@ -219,7 +227,7 @@ private fun StepDestination(draft: Draft, onDraft: ((Draft) -> Draft) -> Unit) {
                     todayDateBorderColor = c.primary,
                 ),
                 modifier = Modifier.fillMaxWidth().height(400.dp)
-                    .clip(RoundedCornerShape(24.dp)),
+                    .clip(RoundedCornerShape(Radius.md)),
             )
         }
     }
@@ -228,17 +236,17 @@ private fun StepDestination(draft: Draft, onDraft: ((Draft) -> Draft) -> Unit) {
 @Composable
 private fun Field(label: String, value: String, placeholder: String, onChange: (String) -> Unit) {
     val c = AppTheme.colors
-    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        Text(label.uppercase(), color = c.primary, fontSize = 12.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(start = 4.dp))
+    Column(verticalArrangement = Arrangement.spacedBy(7.dp)) {
+        Text(label.uppercase(), style = LabelStamp, color = c.primary)
         Box(
-            Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp))
-                .background(c.surface).border(1.5.dp, c.outline, RoundedCornerShape(16.dp))
-                .padding(horizontal = 16.dp, vertical = 15.dp),
+            Modifier.fillMaxWidth().clip(RoundedCornerShape(Radius.xs))
+                .background(c.surfaceContainer).border(1.5.dp, c.outline, RoundedCornerShape(Radius.xs))
+                .padding(horizontal = 14.dp, vertical = 16.dp),
         ) {
-            if (value.isEmpty()) Text(placeholder, color = c.onSurfaceVariant, fontSize = 16.sp)
+            if (value.isEmpty()) Text(placeholder, color = c.onSurfaceVariant, fontSize = 15.sp)
             BasicTextField(
                 value = value, onValueChange = onChange,
-                textStyle = LocalTextStyle.current.copy(color = c.onSurface, fontSize = 16.sp),
+                textStyle = LocalTextStyle.current.copy(color = c.onSurface, fontSize = 15.sp),
                 cursorBrush = SolidColor(c.primary),
                 singleLine = true,
             )
@@ -246,40 +254,54 @@ private fun Field(label: String, value: String, placeholder: String, onChange: (
     }
 }
 
+/** Planche de timbres : on choisit le trigramme du voyage. */
 @Composable
 private fun StepType(draft: Draft, onDraft: ((Draft) -> Draft) -> Unit) {
     val c = AppTheme.colors
     val types = TripType.entries
-    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         types.chunked(2).forEach { row ->
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 row.forEach { type ->
                     val sel = draft.type == type
                     Box(
                         Modifier.weight(1f)
-                            .clip(RoundedCornerShape(if (sel) 32.dp else 16.dp))
-                            .background(if (sel) c.primaryContainer else Color.Transparent)
+                            .clip(RoundedCornerShape(Radius.sm))
+                            .background(if (sel) c.primaryContainer else c.surfaceContainer)
                             .border(
-                                if (sel) 2.dp else 1.5.dp,
+                                if (sel) 2.dp else 1.dp,
                                 if (sel) c.primary else c.outline,
-                                RoundedCornerShape(if (sel) 32.dp else 16.dp),
+                                RoundedCornerShape(Radius.sm),
                             )
                             .clickable(
                                 interactionSource = remember { MutableInteractionSource() },
                                 indication = ripple(),
                                 onClick = { onDraft { it.copy(type = type) } },
                             )
-                            .padding(horizontal = 12.dp, vertical = 20.dp),
+                            .padding(14.dp),
                     ) {
                         Column {
-                            Text(type.emoji, fontSize = 30.sp)
-                            Spacer(Modifier.height(12.dp))
-                            Text(type.label, color = c.onSurface, fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
+                            Box(
+                                Modifier
+                                    .size(42.dp)
+                                    .clip(RoundedCornerShape(Radius.xs))
+                                    .background(if (sel) c.primary else c.surface)
+                                    .border(1.5.dp, if (sel) c.primary else c.outline, RoundedCornerShape(Radius.xs)),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Text(
+                                    type.code, style = DataMono, fontSize = 12.sp,
+                                    color = if (sel) c.onPrimary else c.onSurfaceVariant,
+                                )
+                            }
+                            Spacer(Modifier.height(10.dp))
+                            Text(type.label.uppercase(), style = CategoryTitle, color = c.onSurface, fontSize = 12.sp)
                         }
                         if (sel) Box(
-                            Modifier.align(Alignment.TopEnd).size(28.dp).clip(CircleShape).background(c.primary),
+                            Modifier.align(Alignment.TopEnd).size(22.dp)
+                                .clip(RoundedCornerShape(Radius.xs)).background(c.primary),
                             contentAlignment = Alignment.Center,
-                        ) { Icon(Icons.Default.Check, null, tint = c.onPrimary, modifier = Modifier.size(15.dp)) }
+                        ) { Icon(Icons.Default.Check, null, tint = c.onPrimary, modifier = Modifier.size(13.dp)) }
                     }
                 }
                 if (row.size == 1) Spacer(Modifier.weight(1f))
@@ -291,18 +313,26 @@ private fun StepType(draft: Draft, onDraft: ((Draft) -> Draft) -> Unit) {
 @Composable
 private fun StepOptions(draft: Draft, onDraft: ((Draft) -> Draft) -> Unit) {
     val c = AppTheme.colors
-    Column(verticalArrangement = Arrangement.spacedBy(18.dp)) {
-        Text("STYLE DE VALISE", color = c.onSurfaceVariant, fontSize = 12.sp, fontWeight = FontWeight.Bold)
-        SegmentedButton(
-            options = Intensity.entries.map { it to it.label },
-            selected = draft.intensity,
-            onSelect = { v -> onDraft { it.copy(intensity = v) } },
-        )
+    Column(verticalArrangement = Arrangement.spacedBy(20.dp)) {
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text("VOLUME DE BAGAGE", style = LabelStamp, color = c.primary)
+            SegmentedButton(
+                options = Intensity.entries.map { it to it.label },
+                selected = draft.intensity,
+                onSelect = { v -> onDraft { it.copy(intensity = v) } },
+            )
+        }
+        FormRule()
         ToggleRow("Accès à une machine à laver", "Réduit les quantités de vêtements", draft.laundry) { v -> onDraft { it.copy(laundry = v) } }
+        FormRule()
         ToggleRow("Voyage avec enfants", "Ajoute les indispensables", draft.kids) { v -> onDraft { it.copy(kids = v) } }
+        FormRule()
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            Text("Voyageurs", color = c.onSurface, fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
-            Spacer(Modifier.weight(1f))
+            Column(Modifier.weight(1f)) {
+                Text("Voyageurs", color = c.onSurface, fontSize = 15.sp, fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold)
+                Spacer(Modifier.height(3.dp))
+                Text("Ajuste les quantités partagées", color = c.onSurfaceVariant, fontSize = 13.sp)
+            }
             QtyStepper(draft.travelers, onDelta = { d -> onDraft { it.copy(travelers = (it.travelers + d).coerceAtLeast(1)) } }, big = true)
         }
     }
@@ -313,10 +343,11 @@ private fun ToggleRow(name: String, sub: String, checked: Boolean, onToggle: (Bo
     val c = AppTheme.colors
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
         Column(Modifier.weight(1f)) {
-            Text(name, color = c.onSurface, fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
+            Text(name, color = c.onSurface, fontSize = 15.sp, fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold)
             Spacer(Modifier.height(3.dp))
             Text(sub, color = c.onSurfaceVariant, fontSize = 13.sp)
         }
+        Spacer(Modifier.width(12.dp))
         AppSwitch(checked) { onToggle(!checked) }
     }
 }

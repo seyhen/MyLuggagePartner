@@ -7,8 +7,6 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.GenericShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
@@ -22,29 +20,23 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.myluggagepartner.app.ui.theme.AppTheme
-
-/** Forme blob organique (border-radius asymétrique de la maquette). */
-fun blobShape(): Shape = GenericShape { size, _ ->
-    val w = size.width; val h = size.height
-    // Approximation d'un blob doux via courbes de Bézier
-    moveTo(w * 0.5f, 0f)
-    cubicTo(w * 0.82f, 0f, w, h * 0.20f, w, h * 0.48f)
-    cubicTo(w, h * 0.78f, w * 0.80f, h, w * 0.50f, h)
-    cubicTo(w * 0.22f, h, 0f, h * 0.80f, 0f, h * 0.52f)
-    cubicTo(0f, h * 0.22f, w * 0.20f, 0f, w * 0.5f, 0f)
-    close()
-}
+import com.myluggagepartner.app.ui.theme.DataMono
+import com.myluggagepartner.app.ui.theme.LabelStamp
+import com.myluggagepartner.app.ui.theme.Radius
 
 /** Zone tactile minimale recommandée (48dp) — le visuel peut rester plus petit. */
 private val MinTouchTarget = 48.dp
 
+/**
+ * Case de formulaire postal : carrée, bord franc, oblitérée d'une croix
+ * quand l'objet est dans la valise.
+ */
 @Composable
 fun AppCheckbox(checked: Boolean, onToggle: () -> Unit, modifier: Modifier = Modifier) {
     val c = AppTheme.colors
@@ -64,30 +56,31 @@ fun AppCheckbox(checked: Boolean, onToggle: () -> Unit, modifier: Modifier = Mod
     ) {
         Box(
             Modifier
-                .size(28.dp)
-                .clip(RoundedCornerShape(7.dp))
+                .size(24.dp)
+                .clip(RoundedCornerShape(Radius.xs))
                 .background(bg)
-                .border(2.dp, border, RoundedCornerShape(7.dp)),
+                .border(1.5.dp, border, RoundedCornerShape(Radius.xs)),
             contentAlignment = Alignment.Center,
         ) {
-            if (checked) Icon(Icons.Default.Check, null, tint = c.onPrimary, modifier = Modifier.size(16.dp))
+            if (checked) Icon(Icons.Default.Check, null, tint = c.onPrimary, modifier = Modifier.size(15.dp))
         }
     }
 }
 
+/** Interrupteur mécanique : glissière rectangulaire, curseur carré. */
 @Composable
 fun AppSwitch(checked: Boolean, onToggle: () -> Unit) {
     val c = AppTheme.colors
     val trackBg by animateColorAsState(if (checked) c.primary else c.surfaceContainerLow, label = "swTrack")
     val trackBorder by animateColorAsState(if (checked) c.primary else c.onSurfaceVariant, label = "swBorder")
-    val thumbOffset by animateDpAsState(if (checked) 26.dp else 4.dp, label = "swThumb")
+    val thumbOffset by animateDpAsState(if (checked) 24.dp else 3.dp, label = "swThumb")
     val thumbColor by animateColorAsState(if (checked) c.onPrimary else c.onSurfaceVariant, label = "swThumbC")
     Box(
         Modifier
-            .width(54.dp).height(32.dp)
-            .clip(CircleShape)
+            .width(50.dp).height(28.dp)
+            .clip(RoundedCornerShape(Radius.xs))
             .background(trackBg)
-            .border(2.dp, trackBorder, CircleShape)
+            .border(1.5.dp, trackBorder, RoundedCornerShape(Radius.xs))
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null,
@@ -99,12 +92,13 @@ fun AppSwitch(checked: Boolean, onToggle: () -> Unit) {
                 .padding(start = thumbOffset)
                 .align(Alignment.CenterStart)
                 .size(20.dp)
-                .clip(CircleShape)
+                .clip(RoundedCornerShape(1.dp))
                 .background(thumbColor),
         )
     }
 }
 
+/** Onglets de formulaire : cases jointives séparées par un filet franc. */
 @Composable
 fun <T> SegmentedButton(
     options: List<Pair<T, String>>,
@@ -115,14 +109,14 @@ fun <T> SegmentedButton(
     Row(
         Modifier
             .fillMaxWidth()
-            .clip(CircleShape)
-            .border(1.5.dp, c.outline, CircleShape),
+            .clip(RoundedCornerShape(Radius.sm))
+            .border(1.5.dp, c.outline, RoundedCornerShape(Radius.sm)),
     ) {
         options.forEachIndexed { i, (value, label) ->
             val isSel = value == selected
-            val bg by animateColorAsState(if (isSel) c.surfaceContainer else Color.Transparent, label = "segBg")
-            if (i > 0) Box(Modifier.width(1.5.dp).height(46.dp).background(c.outline))
-            Row(
+            val bg by animateColorAsState(if (isSel) c.primary else Color.Transparent, label = "segBg")
+            if (i > 0) Box(Modifier.width(1.5.dp).height(44.dp).background(c.outline))
+            Box(
                 Modifier
                     .weight(1f)
                     .background(bg)
@@ -131,25 +125,20 @@ fun <T> SegmentedButton(
                         indication = ripple(),
                         onClick = { onSelect(value) },
                     )
-                    .padding(vertical = 12.dp),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically,
+                    .padding(vertical = 13.dp),
+                contentAlignment = Alignment.Center,
             ) {
-                if (isSel) {
-                    Text("✓ ", color = c.primary, fontSize = 13.sp, fontWeight = FontWeight.Bold)
-                }
                 Text(
-                    label,
-                    color = if (isSel) c.onSurface else c.onSurfaceVariant,
-                    fontSize = 14.sp,
-                    fontWeight = if (isSel) FontWeight.Bold else FontWeight.SemiBold,
+                    label.uppercase(),
+                    style = LabelStamp,
+                    color = if (isSel) c.onPrimary else c.onSurfaceVariant,
                 )
             }
         }
     }
 }
 
-/** Stepper quantité en pilule (− valeur +). */
+/** Champ quantité de bordereau : − [ 04 ] + , chiffres en machine à écrire. */
 @Composable
 fun QtyStepper(
     qty: Int,
@@ -157,44 +146,45 @@ fun QtyStepper(
     big: Boolean = false,
 ) {
     val c = AppTheme.colors
-    val btn = if (big) 36.dp else 34.dp
-    Row(
-        Modifier
-            .clip(CircleShape)
-            .background(if (big) c.surfaceContainer else c.surface)
-            .padding(horizontal = 6.dp, vertical = 4.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        StepBtn("−", if (qty > 1) c.onSurfaceVariant else c.onSurfaceVariant.copy(alpha = 0.3f), btn) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        StepBtn("−", if (qty > 1) c.onSurface else c.onSurfaceVariant.copy(alpha = 0.35f)) {
             if (qty > 1) onDelta(-1)
         }
-        Text(
-            "$qty",
-            fontWeight = FontWeight.ExtraBold,
-            fontSize = if (big) 16.sp else 14.sp,
-            color = c.onSurface,
-            modifier = Modifier.widthIn(min = if (big) 28.dp else 20.dp),
-            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-        )
-        StepBtn("+", c.primary, btn) { onDelta(1) }
+        Box(
+            Modifier
+                .widthIn(min = if (big) 44.dp else 38.dp)
+                .clip(RoundedCornerShape(Radius.xs))
+                .background(c.surface)
+                .border(1.dp, c.outline, RoundedCornerShape(Radius.xs))
+                .padding(vertical = 5.dp, horizontal = 6.dp),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(
+                qty.toString().padStart(2, '0'),
+                style = DataMono,
+                fontSize = if (big) 15.sp else 13.sp,
+                color = c.onSurface,
+                textAlign = TextAlign.Center,
+            )
+        }
+        StepBtn("+", c.primary) { onDelta(1) }
     }
 }
 
 @Composable
-private fun StepBtn(label: String, color: Color, size: androidx.compose.ui.unit.Dp, onClick: () -> Unit) {
+private fun StepBtn(label: String, color: Color, onClick: () -> Unit) {
     val desc = if (label == "+") "Augmenter la quantité" else "Diminuer la quantité"
     Box(
         Modifier
-            .size(maxOf(size, MinTouchTarget))
-            .clip(CircleShape)
+            .size(MinTouchTarget)
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
-                indication = ripple(bounded = false, radius = size / 2),
+                indication = ripple(bounded = false, radius = 20.dp),
                 onClick = onClick,
             )
             .semantics { contentDescription = desc },
         contentAlignment = Alignment.Center,
     ) {
-        Text(label, color = color, fontSize = if (size > 30.dp) 18.sp else 16.sp, fontWeight = FontWeight.Bold)
+        Text(label, color = color, fontSize = 19.sp, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
     }
 }

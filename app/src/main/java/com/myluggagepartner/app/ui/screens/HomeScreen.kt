@@ -1,6 +1,7 @@
 package com.myluggagepartner.app.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.WindowInsets
@@ -9,10 +10,7 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.TileMode
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
@@ -28,12 +26,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.myluggagepartner.app.model.Trip
 import com.myluggagepartner.app.model.TripTemplate
-import com.myluggagepartner.app.ui.blobShape
 import com.myluggagepartner.app.ui.theme.*
 import java.time.LocalDate
 
@@ -72,37 +69,45 @@ fun HomeScreen(
             trip.departureDateEpoch ?: Long.MAX_VALUE
         })
     }
-    // Le prochain départ imminent (J-7 ou moins) est mis en avant visuellement.
-    val featuredTripId = sortedTrips.firstOrNull { countdownLabel(it) != null }?.id
+    // Le prochain voyage porte le liseré — c'est l'enveloppe en tête de pile.
+    val featuredTripId = sortedTrips.firstOrNull()?.id
+
     Box(Modifier.fillMaxSize().background(c.surface).windowInsetsPadding(WindowInsets.safeDrawing)) {
         Column(Modifier.fillMaxSize()) {
-            // Nav bar custom
+            // En-tête : cartouche d'expéditeur
             Row(
-                Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 8.dp),
+                Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 10.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Box(
-                    Modifier.size(42.dp).clip(RoundedCornerShape(14.dp)).background(c.surfaceContainer),
+                    Modifier
+                        .size(38.dp)
+                        .clip(RoundedCornerShape(Radius.xs))
+                        .background(c.primary),
                     contentAlignment = Alignment.Center,
-                ) { Text("M", style = TitleCard, color = c.primary, fontSize = 20.sp) }
+                ) { Text("M", style = TitleCard, color = c.onPrimary, fontSize = 18.sp) }
+                Spacer(Modifier.width(12.dp))
+                Text("MYLUGGAGEPARTNER", style = LabelStamp, color = c.onSurfaceVariant)
                 Spacer(Modifier.weight(1f))
-                CircleIconButton(onClick = onSettings) {
-                    Icon(Icons.Default.Settings, "Paramètres", tint = c.onSurface, modifier = Modifier.size(20.dp))
+                NavIconButton(onClick = onSettings) {
+                    Icon(Icons.Default.Settings, "Paramètres", tint = c.onSurface, modifier = Modifier.size(19.dp))
                 }
             }
 
             LazyColumn(
                 Modifier.weight(1f),
-                contentPadding = PaddingValues(bottom = 96.dp),
+                contentPadding = PaddingValues(bottom = 100.dp),
             ) {
                 item {
-                    Column(Modifier.padding(start = 20.dp, end = 20.dp, top = 8.dp, bottom = 18.dp)) {
-                        Text("Mes valises", style = DisplayLarge, color = c.onSurface)
-                        Spacer(Modifier.height(8.dp))
+                    Column(Modifier.padding(start = 20.dp, end = 20.dp, top = 6.dp, bottom = 20.dp)) {
+                        Text("MES VALISES", style = DisplayLarge, color = c.onSurface)
+                        Spacer(Modifier.height(10.dp))
+                        AirmailBand(height = 6.dp)
+                        Spacer(Modifier.height(10.dp))
                         Text(
-                            if (sortedTrips.isEmpty()) "Prêt à partir ?"
-                            else "${sortedTrips.size} voyage${if (sortedTrips.size > 1) "s" else ""} en préparation",
-                            style = MaterialThemeBody(), color = c.onSurfaceVariant, fontWeight = FontWeight.Medium,
+                            if (sortedTrips.isEmpty()) "Aucun envoi en préparation"
+                            else "${sortedTrips.size} envoi${if (sortedTrips.size > 1) "s" else ""} en préparation",
+                            style = LabelStamp, color = c.onSurfaceVariant,
                         )
                     }
                 }
@@ -111,8 +116,8 @@ fun HomeScreen(
                     item { EmptyState() }
                 } else {
                     items(sortedTrips, key = { it.id }) { trip ->
-                        Box(Modifier.padding(horizontal = 20.dp, vertical = 7.dp)) {
-                            if (trip.id == featuredTripId) PhotoTripCard(trip) { onOpenTrip(trip.id) }
+                        Box(Modifier.padding(horizontal = 20.dp, vertical = 6.dp)) {
+                            if (trip.id == featuredTripId) FeaturedTripCard(trip) { onOpenTrip(trip.id) }
                             else FlatTripCard(trip) { onOpenTrip(trip.id) }
                         }
                     }
@@ -120,12 +125,11 @@ fun HomeScreen(
 
                 if (templates.isNotEmpty()) {
                     item {
-                        Text(
-                            "Mes modèles",
-                            style = DisplayMedium,
-                            color = c.onSurface,
-                            modifier = Modifier.padding(start = 20.dp, top = 24.dp, bottom = 10.dp),
-                        )
+                        Column(Modifier.padding(start = 20.dp, end = 20.dp, top = 26.dp, bottom = 10.dp)) {
+                            Text("MODÈLES ENREGISTRÉS", style = LabelStamp, color = c.onSurfaceVariant)
+                            Spacer(Modifier.height(8.dp))
+                            FormRule()
+                        }
                     }
                     items(templates, key = { it.id }) { tpl ->
                         TemplateCard(tpl, onUse = { onUseTemplate(tpl.id) }, onDelete = { onDeleteTemplate(tpl.id) })
@@ -134,36 +138,58 @@ fun HomeScreen(
             }
         }
 
-        // FAB étendu
+        // Bouton d'affranchissement
         Row(
             Modifier
                 .align(Alignment.BottomEnd)
                 .padding(20.dp)
-                .clip(RoundedCornerShape(24.dp))
+                .clip(RoundedCornerShape(Radius.sm))
                 .background(c.primary)
                 .clickable(
                     interactionSource = remember { MutableInteractionSource() },
                     indication = ripple(color = c.onPrimary),
                     onClick = { if (canCreate) onCreate() else onLimitReached() },
                 )
-                .padding(horizontal = 22.dp, vertical = 17.dp),
+                .padding(horizontal = 20.dp, vertical = 16.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Icon(Icons.Default.Add, null, tint = c.onPrimary, modifier = Modifier.size(20.dp))
+            Icon(Icons.Default.Add, null, tint = c.onPrimary, modifier = Modifier.size(18.dp))
             Spacer(Modifier.width(8.dp))
-            Text("Nouvelle valise", color = c.onPrimary, fontWeight = FontWeight.Bold, fontSize = 15.sp)
+            Text("NOUVELLE VALISE", style = LabelStamp, color = c.onPrimary)
         }
     }
 }
 
+/** Timbre affranchi : trigramme du type de voyage dans un cadre à filet. */
 @Composable
-private fun PhotoTripCard(trip: Trip, onClick: () -> Unit) {
-    val c = AppTheme.colors
+private fun TypeStamp(
+    code: String,
+    size: androidx.compose.ui.unit.Dp,
+    fg: Color,
+    border: Color,
+    bg: Color,
+) {
     Box(
         Modifier
-            .fillMaxWidth().height(300.dp)
-            .clip(RoundedCornerShape(36.dp))
-            .background(Brush.linearGradient(trip.type.gradient()))
+            .size(size)
+            .clip(RoundedCornerShape(Radius.xs))
+            .background(bg)
+            .border(1.5.dp, border, RoundedCornerShape(Radius.xs)),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(code, style = DataMono, color = fg, fontSize = (size.value * 0.26f).sp)
+    }
+}
+
+/** L'enveloppe en tête de pile : liseré complet en haut, grand format. */
+@Composable
+private fun FeaturedTripCard(trip: Trip, onClick: () -> Unit) {
+    val c = AppTheme.colors
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(Radius.md))
+            .border(1.dp, c.outline, RoundedCornerShape(Radius.md))
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = ripple(),
@@ -171,100 +197,96 @@ private fun PhotoTripCard(trip: Trip, onClick: () -> Unit) {
             )
             .semantics(mergeDescendants = true) {},
     ) {
-        // Liseré « par avion » — signale la valise dont le départ approche.
+        AirmailBand(height = 9.dp)
         Box(
             Modifier
                 .fillMaxWidth()
-                .height(9.dp)
-                .align(Alignment.TopCenter)
-                .background(
-                    Brush.linearGradient(
-                        colors = listOf(
-                            Color(0xFFFBFAF7), Color(0xFFFBFAF7),
-                            Color(0xFFD8232A), Color(0xFFD8232A),
-                            Color(0xFFFBFAF7), Color(0xFFFBFAF7),
-                            Color(0xFF0B5FA5), Color(0xFF0B5FA5),
-                        ),
-                        start = Offset(0f, 0f),
-                        end = Offset(26f, 26f),
-                        tileMode = TileMode.Repeated,
+                .height(232.dp)
+                .background(Brush.linearGradient(trip.type.gradient())),
+        ) {
+            Box(
+                Modifier.fillMaxSize().background(
+                    Brush.verticalGradient(
+                        0f to Color(0x4D0A1420), 0.34f to Color.Transparent,
+                        0.45f to Color.Transparent, 1f to Color(0xA60A1420),
                     ),
                 ),
-        )
-        // Scrim dégradé
-        Box(
-            Modifier.fillMaxSize().background(
-                Brush.verticalGradient(
-                    0f to Color(0x59140C08), 0.34f to Color.Transparent,
-                    0.45f to Color.Transparent, 1f to Color(0x9E140C08),
-                ),
-            ),
-        )
-        Column(Modifier.fillMaxSize().padding(20.dp), verticalArrangement = Arrangement.SpaceBetween) {
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Chip("${trip.type.emoji} ${trip.type.label}", Color(0xEBFFFFFF), Color(0xFF241914))
-                if (trip.dates.isNotBlank()) Chip(trip.dates, Color(0x73140C08), Color(0xE6FFFFFF))
-                countdownLabel(trip)?.let { label ->
-                    Chip("🔔 $label", Color(0xEBFFFFFF), Color(0xFFD8232A))
-                }
-            }
-            Column {
-                Text(trip.name, style = DisplayMedium, color = Color.White)
-                Spacer(Modifier.height(12.dp))
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    ProgressBar(trip.progress, Modifier.weight(1f), 12.dp, Color(0x4DFFFFFF), Color.White)
+            )
+            Column(Modifier.fillMaxSize().padding(18.dp), verticalArrangement = Arrangement.SpaceBetween) {
+                Row(verticalAlignment = Alignment.Top) {
+                    TypeStamp(trip.type.code, 46.dp, Color.White, Color(0x8CFFFFFF), Color(0x26FFFFFF))
                     Spacer(Modifier.width(10.dp))
-                    Text("${trip.done}/${trip.total}", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                    Column {
+                        Text(trip.type.label.uppercase(), style = LabelStamp, color = Color(0xE6FFFFFF))
+                        if (trip.dates.isNotBlank()) {
+                            Spacer(Modifier.height(3.dp))
+                            Text(trip.dates, style = DataMono, color = Color(0xB3FFFFFF), fontSize = 11.sp)
+                        }
+                    }
+                    Spacer(Modifier.weight(1f))
+                    countdownLabel(trip)?.let { label ->
+                        Chip(label, Color(0xFFD8232A), Color.White)
+                    }
+                }
+                Column {
+                    Text(trip.name.uppercase(), style = DisplayMedium, color = Color.White)
+                    Spacer(Modifier.height(10.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        ProgressBar(
+                            trip.progress, Modifier.weight(1f), 10.dp,
+                            track = Color(0x40FFFFFF), fill = Color.White,
+                        )
+                        Spacer(Modifier.width(10.dp))
+                        Text("${trip.done}/${trip.total}", style = DataMono, color = Color.White, fontSize = 13.sp)
+                    }
                 }
             }
         }
     }
 }
 
+/** Les autres envois : ligne de bordereau compacte. */
 @Composable
 private fun FlatTripCard(trip: Trip, onClick: () -> Unit) {
     val c = AppTheme.colors
     Row(
         Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(36.dp))
-            .background(c.surfaceContainerLow)
+            .clip(RoundedCornerShape(Radius.md))
+            .background(c.surfaceContainer)
+            .border(1.dp, c.outline, RoundedCornerShape(Radius.md))
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = ripple(),
                 onClick = onClick,
             )
             .semantics(mergeDescendants = true) {}
-            .padding(22.dp),
+            .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Box(
-            Modifier.size(56.dp).clip(blobShape()).background(c.surfaceContainer),
-            contentAlignment = Alignment.Center,
-        ) { Text(trip.type.emoji, fontSize = 26.sp) }
-        Spacer(Modifier.width(16.dp))
+        TypeStamp(trip.type.code, 46.dp, c.primary, c.outline, c.surface)
+        Spacer(Modifier.width(14.dp))
         Column(Modifier.weight(1f)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(trip.name, style = TitleCard, color = c.onSurface, modifier = Modifier.weight(1f, fill = false))
+                Text(
+                    trip.name.uppercase(), style = TitleCard, color = c.onSurface,
+                    modifier = Modifier.weight(1f, fill = false),
+                )
                 countdownLabel(trip)?.let { label ->
                     Spacer(Modifier.width(8.dp))
-                    Text(
-                        "🔔 $label", fontSize = 11.sp, fontWeight = FontWeight.Bold,
-                        color = c.reminder,
-                        modifier = Modifier.clip(CircleShape).background(c.reminder.copy(alpha = 0.12f)).padding(horizontal = 8.dp, vertical = 3.dp),
-                    )
+                    Chip(label, c.reminder.copy(alpha = 0.14f), c.reminder)
                 }
             }
-            Spacer(Modifier.height(4.dp))
+            Spacer(Modifier.height(3.dp))
             Text(
                 if (trip.dates.isNotBlank()) "${trip.dates} · ${trip.type.label}" else trip.type.label,
-                color = c.onSurfaceVariant, fontSize = 13.sp, fontWeight = FontWeight.Medium,
+                style = LabelStamp, color = c.onSurfaceVariant,
             )
             Spacer(Modifier.height(10.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
-                ProgressBar(trip.progress, Modifier.weight(1f), 8.dp, c.surfaceContainer, c.primary)
+                ProgressBar(trip.progress, Modifier.weight(1f), 7.dp, track = c.surfaceContainerLow, fill = c.primary)
                 Spacer(Modifier.width(10.dp))
-                Text("${trip.done}/${trip.total}", color = c.primary, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                Text("${trip.done}/${trip.total}", style = DataMono, color = c.primary, fontSize = 12.sp)
             }
         }
     }
@@ -275,35 +297,38 @@ private fun TemplateCard(tpl: TripTemplate, onUse: () -> Unit, onDelete: () -> U
     val c = AppTheme.colors
     Row(
         Modifier
-            .padding(horizontal = 20.dp, vertical = 5.dp)
+            .padding(horizontal = 20.dp, vertical = 4.dp)
             .fillMaxWidth()
-            .clip(RoundedCornerShape(24.dp))
-            .background(c.surfaceContainerLow)
+            .clip(RoundedCornerShape(Radius.sm))
+            .background(c.surfaceContainer)
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = ripple(),
                 onClick = onUse,
             )
-            .padding(18.dp),
+            .padding(start = 14.dp, top = 10.dp, bottom = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Box(
-            Modifier.size(44.dp).clip(RoundedCornerShape(14.dp)).background(c.surfaceContainer),
-            contentAlignment = Alignment.Center,
-        ) { Text(tpl.type.emoji, fontSize = 22.sp) }
-        Spacer(Modifier.width(14.dp))
+        TypeStamp(tpl.type.code, 36.dp, c.onSurfaceVariant, c.outline, c.surface)
+        Spacer(Modifier.width(12.dp))
         Column(Modifier.weight(1f)) {
-            Text(tpl.name, color = c.onSurface, fontWeight = FontWeight.SemiBold, fontSize = 15.sp)
-            Text("${tpl.items.size} objets · ${tpl.type.label}", color = c.onSurfaceVariant, fontSize = 13.sp)
+            Text(tpl.name.uppercase(), style = CategoryTitle, color = c.onSurface)
+            Spacer(Modifier.height(2.dp))
+            Text("${tpl.items.size} objets · ${tpl.type.label}", style = LabelStamp, color = c.onSurfaceVariant)
         }
         Box(
-            Modifier.size(48.dp).clip(CircleShape).clickable(
+            Modifier.size(48.dp).clip(RoundedCornerShape(Radius.xs)).clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = ripple(bounded = false, radius = 22.dp),
                 onClick = onDelete,
             ),
             contentAlignment = Alignment.Center,
-        ) { Icon(Icons.Default.Close, "Supprimer le modèle « ${tpl.name} »", tint = c.onSurfaceVariant, modifier = Modifier.size(18.dp)) }
+        ) {
+            Icon(
+                Icons.Default.Close, "Supprimer le modèle « ${tpl.name} »",
+                tint = c.onSurfaceVariant, modifier = Modifier.size(17.dp),
+            )
+        }
     }
 }
 
@@ -311,13 +336,24 @@ private fun TemplateCard(tpl: TripTemplate, onUse: () -> Unit, onDelete: () -> U
 private fun EmptyState() {
     val c = AppTheme.colors
     Column(
-        Modifier.fillMaxWidth().padding(top = 80.dp, start = 40.dp, end = 40.dp),
+        Modifier.fillMaxWidth().padding(top = 60.dp, start = 32.dp, end = 32.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Text("✈️", fontSize = 48.sp)
-        Spacer(Modifier.height(20.dp))
-        Text("Votre première valise vous attend", style = TitleCard, color = c.onSurface, fontSize = 24.sp)
-        Spacer(Modifier.height(10.dp))
-        Text("Trois questions, une liste prête. C'est tout.", color = c.onSurfaceVariant, fontSize = 14.sp)
+        Box(
+            Modifier
+                .size(96.dp)
+                .clip(RoundedCornerShape(Radius.sm))
+                .border(1.5.dp, c.outline, RoundedCornerShape(Radius.sm)),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text("?", style = DisplayMedium, color = c.outline, fontSize = 42.sp)
+        }
+        Spacer(Modifier.height(22.dp))
+        Text("PREMIÈRE VALISE", style = TitleCard, color = c.onSurface, fontSize = 22.sp)
+        Spacer(Modifier.height(8.dp))
+        Text(
+            "Trois questions, une liste prête au départ.",
+            color = c.onSurfaceVariant, fontSize = 14.sp, textAlign = TextAlign.Center,
+        )
     }
 }
