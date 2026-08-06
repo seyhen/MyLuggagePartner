@@ -92,7 +92,7 @@ fun CreateScreen(
                 Spacer(Modifier.height(8.dp))
                 Text(titles[step]!!.second, style = LabelStamp, color = c.onSurfaceVariant)
                 Spacer(Modifier.height(14.dp))
-                AirmailBand(height = 5.dp)
+                FormRule()
                 Spacer(Modifier.height(24.dp))
 
                 when (step) {
@@ -154,11 +154,11 @@ private fun CtaButton(label: String, enabled: Boolean, fill: Boolean, onClick: (
         Modifier
             .then(if (fill) Modifier.fillMaxWidth() else Modifier)
             .clip(RoundedCornerShape(Radius.sm))
-            .background(if (enabled) c.primary else c.primary.copy(alpha = 0.3f))
+            .background(if (enabled) c.primary else c.surfaceContainerLow)
             .clickable(enabled = enabled) { onClick() }
             .padding(horizontal = 24.dp, vertical = 17.dp),
         horizontalArrangement = Arrangement.Center,
-    ) { Text(label, style = LabelStamp, color = c.onPrimary, fontSize = 12.sp) }
+    ) { Text(label, style = LabelStamp, color = if (enabled) c.onPrimary else c.onSurfaceVariant, fontSize = 12.sp) }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

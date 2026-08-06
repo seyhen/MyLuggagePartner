@@ -96,17 +96,17 @@ fun HomeScreen(
 
             LazyColumn(
                 Modifier.weight(1f),
-                contentPadding = PaddingValues(bottom = 100.dp),
+                contentPadding = PaddingValues(bottom = 116.dp),
             ) {
                 item {
                     Column(Modifier.padding(start = 20.dp, end = 20.dp, top = 6.dp, bottom = 20.dp)) {
                         Text("MES VALISES", style = DisplayLarge, color = c.onSurface)
-                        Spacer(Modifier.height(10.dp))
-                        AirmailBand(height = 6.dp)
-                        Spacer(Modifier.height(10.dp))
+                        Spacer(Modifier.height(12.dp))
+                        FormRule()
+                        Spacer(Modifier.height(12.dp))
                         Text(
-                            if (sortedTrips.isEmpty()) "Aucun envoi en préparation"
-                            else "${sortedTrips.size} envoi${if (sortedTrips.size > 1) "s" else ""} en préparation",
+                            if (sortedTrips.isEmpty()) "Aucune valise en préparation"
+                            else "${sortedTrips.size} valise${if (sortedTrips.size > 1) "s" else ""} en préparation",
                             style = LabelStamp, color = c.onSurfaceVariant,
                         )
                     }
@@ -177,7 +177,7 @@ private fun TypeStamp(
             .border(1.5.dp, border, RoundedCornerShape(Radius.xs)),
         contentAlignment = Alignment.Center,
     ) {
-        Text(code, style = DataMono, color = fg, fontSize = (size.value * 0.26f).sp)
+        Text(code, style = DataMono, color = fg, fontSize = (size.value * 0.34f).sp)
     }
 }
 
@@ -229,7 +229,7 @@ private fun FeaturedTripCard(trip: Trip, onClick: () -> Unit) {
                     }
                 }
                 Column {
-                    Text(trip.name.uppercase(), style = DisplayMedium, color = Color.White)
+                    Text(trip.name, style = DisplayMedium, color = Color.White)
                     Spacer(Modifier.height(10.dp))
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         ProgressBar(
@@ -269,7 +269,7 @@ private fun FlatTripCard(trip: Trip, onClick: () -> Unit) {
         Column(Modifier.weight(1f)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    trip.name.uppercase(), style = TitleCard, color = c.onSurface,
+                    trip.name, style = TitleCard, color = c.onSurface,
                     modifier = Modifier.weight(1f, fill = false),
                 )
                 countdownLabel(trip)?.let { label ->
@@ -280,7 +280,7 @@ private fun FlatTripCard(trip: Trip, onClick: () -> Unit) {
             Spacer(Modifier.height(3.dp))
             Text(
                 if (trip.dates.isNotBlank()) "${trip.dates} · ${trip.type.label}" else trip.type.label,
-                style = LabelStamp, color = c.onSurfaceVariant,
+                color = c.onSurfaceVariant, fontSize = 13.sp,
             )
             Spacer(Modifier.height(10.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -312,7 +312,7 @@ private fun TemplateCard(tpl: TripTemplate, onUse: () -> Unit, onDelete: () -> U
         TypeStamp(tpl.type.code, 36.dp, c.onSurfaceVariant, c.outline, c.surface)
         Spacer(Modifier.width(12.dp))
         Column(Modifier.weight(1f)) {
-            Text(tpl.name.uppercase(), style = CategoryTitle, color = c.onSurface)
+            Text(tpl.name, style = CategoryTitle, color = c.onSurface)
             Spacer(Modifier.height(2.dp))
             Text("${tpl.items.size} objets · ${tpl.type.label}", style = LabelStamp, color = c.onSurfaceVariant)
         }

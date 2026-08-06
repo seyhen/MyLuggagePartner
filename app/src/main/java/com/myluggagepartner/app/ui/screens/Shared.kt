@@ -41,7 +41,8 @@ fun Chip(text: String, bg: Color, fg: Color) {
 
 /**
  * Progression = le liseré par avion qui gagne du terrain sur la bande.
- * Quand [striped] est faux (sur fond photo), on retombe sur un remplissage plein.
+ * Remplissage plein et uni : un niveau doit se lire d'un coup d'œil.
+ * Le motif rayé est réservé au liseré de l'enveloppe — jamais ici.
  */
 @Composable
 fun ProgressBar(
@@ -50,7 +51,6 @@ fun ProgressBar(
     height: Dp = 8.dp,
     track: Color,
     fill: Color,
-    striped: Boolean = true,
 ) {
     val animated by animateFloatAsState(progress.coerceIn(0f, 1f), label = "prog")
     Box(
@@ -64,10 +64,7 @@ fun ProgressBar(
                 .fillMaxHeight()
                 .fillMaxWidth(animated)
                 .clip(RoundedCornerShape(Radius.xs))
-                .then(
-                    if (striped) Modifier.background(airmailStripe(period = 26f))
-                    else Modifier.background(fill),
-                ),
+                .background(fill),
         )
     }
 }

@@ -126,7 +126,7 @@ class MainActivity : ComponentActivity() {
 
 /** Bordereau de contenu — même langage que l'app : capitales, cases, quantités alignées. */
 private fun formatTripText(trip: Trip): String = buildString {
-    appendLine("${trip.name.uppercase()}  ·  ${trip.type.code}")
+    appendLine("${trip.name}  ·  ${trip.type.code}")
     if (trip.dates.isNotBlank()) appendLine(trip.dates)
     appendLine("${trip.done}/${trip.total} vérifiés")
     appendLine("—".repeat(28))
@@ -393,7 +393,6 @@ private fun AppDialog(onDismiss: () -> Unit, content: @Composable ColumnScope.()
                 .background(c.surfaceContainer)
                 .border(1.dp, c.outline, RoundedCornerShape(Radius.md)),
         ) {
-            AirmailBand(height = 7.dp)
             Column(Modifier.padding(22.dp), content = content)
         }
     }

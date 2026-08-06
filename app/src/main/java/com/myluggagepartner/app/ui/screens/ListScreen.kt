@@ -148,7 +148,7 @@ fun ListScreen(
                     ) { Text(trip.type.code, style = DataMono, color = Color.White, fontSize = 12.sp) }
                     Spacer(Modifier.width(12.dp))
                     Column {
-                        Text(trip.name.uppercase(), style = DisplayMedium, color = Color.White, fontSize = 27.sp)
+                        Text(trip.name, style = DisplayMedium, color = Color.White, fontSize = 27.sp)
                         Spacer(Modifier.height(3.dp))
                         val subtitle = buildString {
                             if (trip.dates.isNotBlank()) append("${trip.dates}  ·  ")
@@ -160,7 +160,6 @@ fun ListScreen(
                 }
             }
         }
-        AirmailBand(height = 7.dp)
 
         // ——— Bordereau : avancement ———
         Row(

@@ -47,9 +47,9 @@ fun SettingsScreen(
         }
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = 20.dp)) {
             Text("RÉGLAGES", style = DisplayLarge, color = c.onSurface)
-            Spacer(Modifier.height(10.dp))
-            AirmailBand(height = 6.dp)
-            Spacer(Modifier.height(30.dp))
+            Spacer(Modifier.height(12.dp))
+            FormRule()
+            Spacer(Modifier.height(28.dp))
 
             Text("APPARENCE", style = LabelStamp, color = c.onSurfaceVariant)
             Spacer(Modifier.height(10.dp))
@@ -68,7 +68,6 @@ fun SettingsScreen(
                     .background(c.secondaryContainer)
                     .border(1.dp, c.outline, RoundedCornerShape(Radius.md)),
             ) {
-                AirmailBand(height = 6.dp)
                 Column(Modifier.padding(20.dp)) {
                     if (!premium) {
                         Text("ILLIMITÉ, POUR TOUJOURS", style = TitleCard, color = c.onSecondaryContainer)
@@ -98,7 +97,7 @@ fun SettingsScreen(
             }
 
             Spacer(Modifier.height(26.dp))
-            Text("EXPÉDITION", style = LabelStamp, color = c.onSurfaceVariant)
+            Text("PARTAGE", style = LabelStamp, color = c.onSurfaceVariant)
             Spacer(Modifier.height(10.dp))
             FormBox(Modifier.fillMaxWidth()) {
                 ExportRow(Icons.Default.Share, "Partager mes listes", onShare)
